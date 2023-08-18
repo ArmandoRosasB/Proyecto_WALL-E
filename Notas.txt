@@ -11,4 +11,3 @@ Oficina
   S: punto de inicio
   P: papelera
   X: bloqueado
-  
