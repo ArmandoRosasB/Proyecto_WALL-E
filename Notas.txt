@@ -1,0 +1,14 @@
+WALL-E (x5)
+  Almacenamiento de 5 unidades
+  Conoce la ubicación de la papelera
+  Movimiento: modelo de moore (9 posibilidades)
+
+  No puede haber 2 en la misma posición
+  Objetivo: Dejar toda la basura en la papelera
+
+Oficina
+  5 <= alto <= 50 , 5 <= ancho <= 50
+  S: punto de inicio
+  P: papelera
+  X: bloqueado
+  
