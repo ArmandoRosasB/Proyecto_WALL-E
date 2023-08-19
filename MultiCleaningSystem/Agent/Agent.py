@@ -1,7 +1,7 @@
 # Paquetes para trabajar con agentes y modelos
 from mesa import Agent, Model
 import numpy as np
-
+from random import randint
 class Scavenger(Agent):
     """ Clase heredada de mesa.agent que representa a un robot """
     
@@ -16,26 +16,21 @@ class Scavenger(Agent):
     def step(self) -> None:
         """ Este metodo mueve a los robots a la posición más óptima """
         neighbors = self.model.grid.get_neighbors(self.pos, moore = True, include_center = False)  # Regresa un vector
-
-        movements = []
         
-        for agents in neighbors:
-            flag = True 
-            
-            if type(agents) is list:
-                for agent in agents:
-                    if agent.value == 'X' or agent.value == 'R':
-                        flag = False
-                        break
+        movements = set()
+        neighborhood = set()
+        robots = set()
 
-                if flag:
-                    movements.append(agent.pos)
-            elif agents.value == 'T' or agents.value == 'P':
-                movements.append(agents.pos)
+        for agent in neighbors:
+            if agent.value == 'R' or agent.value == 'X': # Si eres robot u obstáculo ya no eres una posición disponible                
+                robots.add(agent.pos)
+            else: # Si no eres robot, eres un vecino candidato
+                neighborhood.add(agent.pos)
 
-        if len(movements) != 0: # Buscar mejor posibilidad
-            #self.pos = movements[0]
-            self.model.grid.move_agent(self, movements[np.random.choice([0, len(movements) - 1])])
+        movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera 
+
+        if len(movements) != 0: # POR IMPLEMENTAR: Buscar el movimiento más óptimo
+            self.model.grid.move_agent(self, movements.pop())
         
 class Trash(Agent):
     """ Clase heredada de mesa.agent que representa una pila de basura """

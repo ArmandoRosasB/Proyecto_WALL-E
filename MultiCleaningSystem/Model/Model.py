@@ -17,20 +17,25 @@ from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
 def get_grid(model):
+    """
+    La funcion get_grid recibe como parametro el modelo 
+    y regresa el mapa del modelo con determinados valores
+    en forma de matriz
+    """
     grid = np.zeros( (model.grid.width, model.grid.height) )
 
     for (content, (x, y)) in model.grid.coord_iter():
         if len(content) == 1:  
             if content[0].value == 'X':
-                grid[x][y] = 5 # Obstáculo
+                grid[x][y] = 11 # Obstáculo
             elif content[0].value == 'P':
-                grid[x][y] = 2 # Papelera
+                grid[x][y] = 0 # Papelera
             else:
-                grid[x][y] = 3 # Solo basura
+                grid[x][y] = 2 # Solo basura
             
             continue
         
-        grid[x][y] = 1 # Basura con robot | Robot con robot
+        grid[x][y] = 4 # Basura con robot | Robot con robot
     
     return grid
 
@@ -55,9 +60,7 @@ class Office(Model):
 
             elif office[x][y] == 'S':
                 agent = Trash(id, self, 0)
-
                 self.grid.place_agent(agent, (x, y))
-                self.schedule.add(agent)
 
                 id += 1
 
@@ -75,7 +78,6 @@ class Office(Model):
                 agent = Trash(id, self, int(office[x][y]))
             
             self.grid.place_agent(agent, (x, y))
-            self.schedule.add(agent)
             id += 1
 
         self.datacollector = DataCollector(model_reporters={"Grid": get_grid})
