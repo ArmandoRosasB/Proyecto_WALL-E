@@ -48,6 +48,9 @@ class Office(Model):
         self.grid = MultiGrid(width, height, torus=False)
         self.schedule = SimultaneousActivation(self)
 
+        Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
+        Scavenger.cell = width * height
+
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
             agent = None
@@ -57,14 +60,17 @@ class Office(Model):
 
             elif office[x][y] == 'P':
                 agent = Target(id, self)
+                Scavenger.target = [x, y]
+                Scavenger.mapa[x][y] = 'P'
 
             elif office[x][y] == 'S':
                 agent = Trash(id, self, 0)
                 self.grid.place_agent(agent, (x, y))
+                Scavenger.mapa[x][y] = 0
 
                 id += 1
 
-                for i in range(5):
+                for i in range(1): # AGENTES: 5
                     agent = Scavenger(id, self)
                     
                     self.grid.place_agent(agent, (x, y))

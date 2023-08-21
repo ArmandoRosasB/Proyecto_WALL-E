@@ -11,7 +11,7 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 
 
 
-MAX_ITERATIONS = 100 # Total de iteraciones
+MAX_ITERATIONS = 2000 # Total de iteraciones
 
 width = 0
 height = 0
@@ -32,7 +32,6 @@ model = Office(width, height, office) # Inicializamos el modelo
 
 for i in range(MAX_ITERATIONS):
     model.step()
-
 
 # Visualizacion
 all_grid = model.datacollector.get_model_vars_dataframe() # Arreglo de matrices
