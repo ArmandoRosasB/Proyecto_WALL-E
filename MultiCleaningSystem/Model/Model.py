@@ -28,8 +28,8 @@ def get_grid(model):
 
     for (content, (x, y)) in model.grid.coord_iter():
 
-       # for c in colores:
-         #   grid[c[0]][c[1]] = 4 # Robot
+        for c in colores:
+            grid[c[0]][c[1]] = 4 # Robot
         if len(content) == 1:  
             if content[0].value == 'X':
                 grid[x][y] = 11 # Obstáculo
@@ -40,7 +40,7 @@ def get_grid(model):
             
             continue
         
-       # colores.append([x, y])
+        colores.append([x, y])
         grid[x][y] = 4 # Robot
 
     
