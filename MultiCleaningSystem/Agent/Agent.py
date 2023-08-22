@@ -18,7 +18,6 @@ class Scavenger(Agent):
         """ El constructor recibe como parámetros el id del agente y el modelo 
         sobre le cual opera """
         super().__init__(id, model)
-        print(self.mapa)
 
         self.value = 'R'
         self.storage = 5
@@ -55,34 +54,9 @@ class Scavenger(Agent):
             if move not in self.visited and move not in self.xVisit:
                 self.xVisit.append(move)
 
-        print("Estoy en ", self.pos, end=" ")
-
         if len(self.xVisit) > 0:
-
             self.model.grid.move_agent(self, self.xVisit.pop())
-
-        print(" y me movere a ", self.pos)
         
-
-    
-    def DepthFirstSearch(self, start):
-        visited = set()
-        pending = []
-        pending.append(start)
-        
-        while(stop):
-            v = pending.pop()
-            if v[0] < 0 or v[0] > len(self.mapa[0]): continue
-            if v[1] < 0 or v[1] > len(self.mapa): continue
-
-            if v not in visited:
-                visited.add(v)
-                stop -= 1
-
-                connected = [[v[0] + move[0], v[1] + move[1]] for move in movements if matrix[v[0] + move[0]][v[1] + move[1]] != 'X' and matrix[v[0] + move[0]][v[1] + move[1]] != 'R']
-                
-                for node in connected:
-                    pending.append(node)
         
 class Trash(Agent):
     """ Clase heredada de mesa.agent que representa una pila de basura """

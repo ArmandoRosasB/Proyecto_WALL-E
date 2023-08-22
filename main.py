@@ -11,7 +11,7 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 
 
 
-MAX_ITERATIONS = 2000 # Total de iteraciones
+MAX_ITERATIONS = 500 # Total de iteraciones
 
 width = 0
 height = 0
