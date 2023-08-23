@@ -56,7 +56,7 @@ class Office(Model):
         self.schedule = SimultaneousActivation(self)
 
         Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
-        Scavenger.cells = width * height - 1
+        Scavenger.cells = width * height
 
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
@@ -76,10 +76,19 @@ class Office(Model):
                 Scavenger.mapa[x][y] = 0
 
                 id += 1
+                
+                offset = 0
+                partition = [width // 5 for i in range(5)]
 
-                for i in range(1): # AGENTES: 5
-                    agent = Scavenger(id, self)
-                    
+                for i in range(width % 5):
+                    partition[i] += 1
+
+                for i in range(5): # AGENTES: 5
+                    agent = Scavenger(id, self,  offset, offset + partition[i] - 1)
+                    # agent.cells = (offset + partition[i] - 1) * height
+                   # agent = Scavenger(id, self, 1, 3)
+                    offset += partition[i]
+
                     self.grid.place_agent(agent, (x, y))
                     self.schedule.add(agent)
 
