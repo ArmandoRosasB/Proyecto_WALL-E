@@ -33,15 +33,15 @@ def get_grid(model):
         if len(content) == 1:  
             if content[0].value == 'X':
                 grid[x][y] = 11 # Obstáculo
-            elif content[0].value == 'P':
+            elif content[0].value == 'P' and [x, y] not in colores:
                 grid[x][y] = 0 # Papelera
-            else:
+            elif [x, y] not in colores:
                 grid[x][y] = 2 # Solo basura
             
             continue
         
         colores.append([x, y])
-        grid[x][y] = 4 # Robot
+        grid[x][y] = 4000 # Robot
 
     
     return grid
@@ -56,7 +56,7 @@ class Office(Model):
         self.schedule = SimultaneousActivation(self)
 
         Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
-        Scavenger.cell = width * height
+        Scavenger.cells = width * height - 1
 
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
@@ -77,7 +77,7 @@ class Office(Model):
 
                 id += 1
 
-                for i in range(5): # AGENTES: 5
+                for i in range(1): # AGENTES: 5
                     agent = Scavenger(id, self)
                     
                     self.grid.place_agent(agent, (x, y))

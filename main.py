@@ -11,14 +11,14 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 
 
 
-MAX_ITERATIONS = 500 # Total de iteraciones
+MAX_ITERATIONS = 157 # Total de iteraciones
 
 width = 0
 height = 0
 office = []
 
 flag = True
-with open('Tests/input3.txt', 'r') as input:
+with open('Tests/input2.txt', 'r') as input:
     
     for linea in input:
         if flag:
