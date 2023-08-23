@@ -16,6 +16,8 @@ from mesa.time import SimultaneousActivation
 # Paquete para obtener informacion del ambiente
 from mesa.datacollection import DataCollector
 
+colores = []
+
 def get_grid(model):
     """
     La funcion get_grid recibe como parametro el modelo 
@@ -25,17 +27,22 @@ def get_grid(model):
     grid = np.zeros( (model.grid.width, model.grid.height) )
 
     for (content, (x, y)) in model.grid.coord_iter():
+
+        for c in colores:
+            grid[c[0]][c[1]] = 4 # Robot
         if len(content) == 1:  
             if content[0].value == 'X':
                 grid[x][y] = 11 # Obstáculo
-            elif content[0].value == 'P':
+            elif content[0].value == 'P' and [x, y] not in colores:
                 grid[x][y] = 0 # Papelera
-            else:
+            elif [x, y] not in colores:
                 grid[x][y] = 2 # Solo basura
             
             continue
         
-        grid[x][y] = 4 # Basura con robot | Robot con robot
+        colores.append([x, y])
+        grid[x][y] = 4000 # Robot
+
     
     return grid
 
@@ -48,6 +55,9 @@ class Office(Model):
         self.grid = MultiGrid(width, height, torus=False)
         self.schedule = SimultaneousActivation(self)
 
+        Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
+        Scavenger.cells = width * height - 1
+
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
             agent = None
@@ -57,14 +67,17 @@ class Office(Model):
 
             elif office[x][y] == 'P':
                 agent = Target(id, self)
+                Scavenger.target = [x, y]
+                Scavenger.mapa[x][y] = 'P'
 
             elif office[x][y] == 'S':
                 agent = Trash(id, self, 0)
                 self.grid.place_agent(agent, (x, y))
+                Scavenger.mapa[x][y] = 0
 
                 id += 1
 
-                for i in range(5):
+                for i in range(1): # AGENTES: 5
                     agent = Scavenger(id, self)
                     
                     self.grid.place_agent(agent, (x, y))
