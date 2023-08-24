@@ -44,8 +44,8 @@ class Scavenger(Agent):
         robots = set()
 
         self.visited.add(self.pos)
-
-        print(self.model.cells)
+        print("Numero de pasos", self.steps)
+        print("Celdas faltantes ", self.model.cells)
 
         if self.model.cells > 0:
 
@@ -147,11 +147,11 @@ class Scavenger(Agent):
                     self.mapa[self.pos[0]][self.pos[1]] = aux[0]
 
         else:
-            pass
-        for row in self.mapa:
-            for col in row:
-                print(col, end= " ")
-            print()
+
+            for row in self.mapa:
+                for col in row:
+                    print(col, end= " ")
+                print()
 
         
         
