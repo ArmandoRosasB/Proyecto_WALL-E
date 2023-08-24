@@ -17,8 +17,6 @@ class Scavenger(Agent):
         sobre le cual opera """
         super().__init__(id, model)
 
-        # self.cells = 0
-
         self.value = 'R'
         self.storage = 5
 
@@ -47,9 +45,9 @@ class Scavenger(Agent):
 
         self.visited.add(self.pos)
 
-        print(self.cells)
+        print(self.model.cells)
 
-        if self.cells > 0:
+        if self.model.cells > 0:
 
             if not self.ready:
                 if self.bottom <= self.pos[0] <= self.top:
@@ -111,8 +109,7 @@ class Scavenger(Agent):
                             self.visited.add(agent.pos)
                             if self.mapa[agent.pos[0]][agent.pos[1]] == -1:
                                 self.mapa[agent.pos[0]][agent.pos[1]] = 'X'
-                                self.cells -= 1
-
+                                self.model.cells -= 1
 
                     else: # Si no eres robot, eres un vecino candidato
                         neighborhood.add(agent.pos)
@@ -142,21 +139,19 @@ class Scavenger(Agent):
                 self.model.grid.move_agent(self, self.xVisit.pop())
 
                 # if self.mapa[self.pos[0]][self.pos[1]] == -1:
-                self.cells -= 1
-
+                self.model.cells -= 1
 
                 aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
 
                 if len(aux) > 0:
                     self.mapa[self.pos[0]][self.pos[1]] = aux[0]
 
-
         else:
-            print(self.steps)
-            for row in self.mapa:
-                for col in row:
-                    print(col, end= " ")
-                print()
+            pass
+        for row in self.mapa:
+            for col in row:
+                print(col, end= " ")
+            print()
 
         
         
