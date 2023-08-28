@@ -76,7 +76,12 @@ class Office(Model):
                 Scavenger.mapa[x][y] = 0
 
                 id += 1
+                
                 robots = 5
+          
+                if width <= 10:
+                    robots -= 3;
+
                 offset = 0
                 partition = [width // robots for i in range(5)]
 

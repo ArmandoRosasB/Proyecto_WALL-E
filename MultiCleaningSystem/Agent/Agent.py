@@ -147,8 +147,10 @@ class Scavenger(Agent):
                 if len(aux) > 0:
                     self.mapa[self.pos[0]][self.pos[1]] = aux[0]
 
-        else:
-
+        else: # Recolectar basura
+            if self.storage == 0:
+                pass
+                
             for row in self.mapa:
                 for col in row:
                     print(col, end= " ")
