@@ -11,7 +11,7 @@ from mesa import Model
 from mesa.space import MultiGrid
 
 # Paquete para activar todos los robots al mismo tiempo
-from mesa.time import SimultaneousActivation
+from mesa.time import BaseScheduler
 
 # Paquete para obtener informacion del ambiente
 from mesa.datacollection import DataCollector
@@ -53,10 +53,10 @@ class Office(Model):
         """ El constructor recibe como parámetros el ancho y alto de la oficina,
         así como una matriz representando lo que contiene la oficina """
         self.grid = MultiGrid(width, height, torus=False)
-        self.schedule = SimultaneousActivation(self)
+        self.schedule = BaseScheduler(self)
 
         Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
-        Scavenger.cells = width * height - 1
+        self.cells = width * height
 
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
@@ -76,10 +76,19 @@ class Office(Model):
                 Scavenger.mapa[x][y] = 0
 
                 id += 1
+                robots = 5
+                offset = 0
+                partition = [width // robots for i in range(5)]
 
-                for i in range(1): # AGENTES: 5
-                    agent = Scavenger(id, self)
-                    
+                for i in range(width % robots):
+                    partition[i] += 1
+
+                for i in range(robots): # AGENTES: 5
+                    agent = Scavenger(id, self,  offset, offset + partition[i] - 1)
+                    # agent.cells = (offset + partition[i] - 1) * height
+                    # agent = Scavenger(id, self, 0, 2)
+                    offset += partition[i]
+
                     self.grid.place_agent(agent, (x, y))
                     self.schedule.add(agent)
 
