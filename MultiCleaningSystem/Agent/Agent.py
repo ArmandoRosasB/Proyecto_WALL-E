@@ -83,7 +83,8 @@ class Scavenger(Agent):
                                 self.xVisit.append(move)
                 
                     if len(movements) == 0 or back:
-                        self.model.grid.move_agent(self, self.prev.pop())
+                        if (len(self.prev) > 0):
+                            self.model.grid.move_agent(self, self.prev.pop())
                         return
 
                     if diff[0] in self.xVisit:
