@@ -32,7 +32,7 @@ with open('Tests/input0.txt', 'r') as input:
 model = Office(width, height, office) # Inicializamos el modelo
 
 print(dijkstra((0,0),(5,4), model)) # (start, end, map: Model)
-print(BreadthFirstSearch((1,2),model))
+#print(BreadthFirstSearch((1,2),model))
 
 """
 for i in range(MAX_ITERATIONS):

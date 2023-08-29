@@ -1,51 +1,17 @@
-from collections import OrderedDict, deque
-from mesa import Model, Agent
+from collections import deque
+from mesa import Model
 import heapq
-import sys
 
-class Ugraph:
-    def __init__(self, direction : bool) -> None:
-        self.__direction = direction
-        self.__vertexes = set()
-        self.__edges = OrderedDict()
+class Node(object):
+    def __init__(self, pos, steps):
+        self.pos = pos
+        self.steps = steps
 
-    def addEdge(self, origin, destiny):
-        flag = lambda node : node in list(self.__vertexes)
-
-        if not flag(origin):
-            self.__vertexes.add(origin)
-            self.__edges[origin] = set()
-
-        if not flag(destiny):
-            self.__vertexes.add(origin)
-            self.__edges[destiny] = set()
-
-        self.__edges[origin].add(destiny)
-
-        if not self.__direction:
-            self.__edges[destiny].add(origin)
-        
-    def containsVertex(self, vertex) -> bool:
-        return vertex in self.__vertexes
+    def __repr__(self):
+        return f"Node value: {self.pos}\tSteps: {self.steps}"
     
-    def getVertexes(self) -> set():
-        return self.__vertexes
-
-    def getConnectionFrom(self, vertex) -> set():
-        return self.__edges[vertex]
-
-    def __str__(self) -> str:
-        aux = ""
-        
-        for vertex in self.__vertexes:
-            aux += vertex + "\t"
-
-            for edge in self.__edges[vertex]:
-                aux += edge + "\t"
-            aux += "\n"
-
-        aux += "\n"
-        return aux
+    def __lt__(self, other):
+        return self.steps < other.steps
 
 def BreadthFirstSearch(start, map: Model) -> list():
     visited = set()
@@ -85,23 +51,18 @@ def BreadthFirstSearch(start, map: Model) -> list():
 def dijkstra(start, end, map: Model) -> list():
     visited = set()
 
-    minimum = sys.maxsize
-    path = []
+    path = {}
 
-    pending = [[start,0,[]]]
+    pending = [Node(start,0)]
     heapq.heapify(pending)
 
     while(len(pending) > 0):
         cell = heapq.heappop(pending)
-        v = cell[0]
-        c = cell[1]
-        cell[2].append(v)
-        prev = cell[2]
+        v = cell.pos
+        c = cell.steps
 
         if v == end:
-            if c < minimum:
-                path = prev
-                minimum = c
+            break
 
         if v not in visited:
             visited.add(v)
@@ -121,6 +82,17 @@ def dijkstra(start, end, map: Model) -> list():
             movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera 
             
             for node in movements:
-                heapq.heappush(pending,[node, c + 1, prev])
+                heapq.heappush(pending,Node(node, c + 1))
+                if node not in path:
+                    path[node] = v
+
+    minPath = [end]
+    node = path[end]
+    #print(path)
+
+    while node != start:
+       # print(minPath)
+        minPath.insert(0, node)
+        node = path[node]
         
-    return minimum, path
+    return minPath
