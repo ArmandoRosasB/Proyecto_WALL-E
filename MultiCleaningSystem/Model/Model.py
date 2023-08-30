@@ -57,6 +57,7 @@ class Office(Model):
 
         Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
         self.cells = width * height
+        self.garbage = 0
 
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():

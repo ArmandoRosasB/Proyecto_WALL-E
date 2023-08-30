@@ -145,7 +145,9 @@ class Scavenger(Agent):
                 aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
 
                 if len(aux) > 0:
-                    self.mapa[self.pos[0]][self.pos[1]] = aux[0]
+                    if self.mapa[self.pos[0]][self.pos[1]] == -1:
+                        self.mapa[self.pos[0]][self.pos[1]] = aux[0]
+                        self.model.garbage += aux[0]
 
         else: # Recolectar basura
             if self.storage == 0:

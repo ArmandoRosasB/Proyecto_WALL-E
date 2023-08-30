@@ -19,7 +19,7 @@ height = 0
 office = []
 
 flag = True
-with open('Tests/input0.txt', 'r') as input:
+with open('Tests/input1.txt', 'r') as input:
     
     for linea in input:
         if flag:
@@ -31,12 +31,13 @@ with open('Tests/input0.txt', 'r') as input:
 
 model = Office(width, height, office) # Inicializamos el modelo
 
-print(dijkstra((0,0),(5,4), model)) # (start, end, map: Model)
+#print(dijkstra((0,0),(5,4), model)) # (start, end, map: Model)
 #print(BreadthFirstSearch((1,2),model))
 
-"""
 for i in range(MAX_ITERATIONS):
     model.step()
+
+#print(model.garbage)
 
 # Visualizacion
 all_grid = model.datacollector.get_model_vars_dataframe() # Arreglo de matrices
@@ -53,4 +54,3 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate, frames = MAX_ITERATIONS)
 
 plt.show()
-"""
