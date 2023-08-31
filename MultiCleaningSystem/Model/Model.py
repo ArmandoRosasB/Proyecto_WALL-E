@@ -57,7 +57,9 @@ class Office(Model):
 
         Scavenger.mapa = [[-1 for column in range (height)] for row in range (width)]
         self.cells = width * height
+        
         self.garbage = 0
+        self.target = None
 
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
@@ -68,7 +70,7 @@ class Office(Model):
 
             elif office[x][y] == 'P':
                 agent = Target(id, self)
-                Scavenger.target = [x, y]
+                self.target = [x, y]
                 Scavenger.mapa[x][y] = 'P'
 
             elif office[x][y] == 'S':

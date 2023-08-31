@@ -1,6 +1,7 @@
 from collections import deque
 from mesa import Model
 import heapq
+from collections import deque
 
 class Node(object):
     def __init__(self, pos, steps):
@@ -13,7 +14,7 @@ class Node(object):
     def __lt__(self, other):
         return self.steps < other.steps
 
-def BreadthFirstSearch(start, map: Model) -> list():
+def BreadthFirstSearch(start, model: Model, top : int, bottom : int) -> list:
     visited = set()
     pending = deque()
 
@@ -28,27 +29,29 @@ def BreadthFirstSearch(start, map: Model) -> list():
             robots = set()
             neighborhood = set()
 
-            neighbors = map.grid.get_neighbors(v, moore = True, include_center = True)  # Regresa un vector
+            neighbors = model.grid.get_neighbors(v, moore = True, include_center = True)  # Regresa un vector
 
             for agent in neighbors:       
                 if agent.value == 'X' or agent.value == 'R':
                     robots.add(agent.pos)
 
                 else: # Si no eres robot, eres un vecino candidato
-                    if agent.detritus > 0:
-                        return list(agent.pos)
+                    if agent.value != 'P' and agent.detritus > 0:
+                        
+                        if agent.pos[0] <= top and agent.pos[0] >= bottom:
+                            return agent.pos
                     
                     neighborhood.add(agent.pos)
 
-
-            movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera 
+            movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera
+            movements = [move for move in movements if move[0] <= top and move[0] >= bottom]
             
             for node in movements:
                 pending.append(node)
         
-    return []
+    return ()
 
-def dijkstra(start, end, map: Model) -> list():
+def dijkstra(start, end, model: Model) -> list():
     visited = set()
 
     path = {}
@@ -70,10 +73,10 @@ def dijkstra(start, end, map: Model) -> list():
             robots = set()
             neighborhood = set()
 
-            neighbors = map.grid.get_neighbors(v, moore = True, include_center = False)  # Regresa un vector
+            neighbors = model.grid.get_neighbors(v, moore = True, include_center = False)  # Regresa un vector
 
             for agent in neighbors:       
-                if agent.value == 'X' or agent.value == 'R':
+                if agent.value == 'X':
                     robots.add(agent.pos)
                 
                 else:
@@ -88,11 +91,9 @@ def dijkstra(start, end, map: Model) -> list():
 
     minPath = [end]
     node = path[end]
-    #print(path)
 
     while node != start:
-       # print(minPath)
         minPath.insert(0, node)
         node = path[node]
         
-    return minPath
+    return deque(minPath)

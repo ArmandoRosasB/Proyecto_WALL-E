@@ -1,14 +1,13 @@
 # Paquetes para trabajar con agentes y modelos
 from mesa import Agent, Model
-import numpy as np
-from random import randint
+from collections import deque
 import sys
+from MultiCleaningSystem.Ugraph.Ugraph import dijkstra, BreadthFirstSearch as bfs
 
 class Scavenger(Agent):
     """ Clase heredada de mesa.agent que representa a un robot """
 
     mapa = []
-    target = [-1, -1]
     cells = 0
     steps = 0
 
@@ -30,6 +29,10 @@ class Scavenger(Agent):
         self.xVisit = []
         self.prev = []
 
+        self.path = deque()
+        self.gate = ()
+        self.setGate = False
+
         self.ready = False
 
     def step(self) -> None:
@@ -47,12 +50,13 @@ class Scavenger(Agent):
         print("Numero de pasos", self.steps)
         print("Celdas faltantes ", self.model.cells)
 
-        if self.model.cells > 0:
+        if self.model.cells > 0: # Exploración
 
             if not self.ready:
                 if self.bottom <= self.pos[0] <= self.top:
                     self.ready = True
-                    print("Entre en ", self.pos)
+                    self.gate = self.pos
+
                     self.visited = set()
                     self.xVisit = []
                     self.prev = []
@@ -149,10 +153,51 @@ class Scavenger(Agent):
                         self.mapa[self.pos[0]][self.pos[1]] = aux[0]
                         self.model.garbage += aux[0]
 
-        else: # Recolectar basura
-            if self.storage == 0:
-                pass
+        elif self.model.garbage > 0: # Recolección
+            # Gate
+            curr_pos = self.model.target
+            while not self.setGate:
+                if self.bottom <= curr_pos <= self.top:
+                    self.setGate = True
+                    self.gate = curr_pos
+                else:
+                    # busqueda
+
+
+            if len(self.path) == 0 and :
+
+            if len(self.path) == 0:
+                # Buscar basura en tu posición
+                aux = [agent for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T' and agent.detritus > 0]
                 
+                if len(aux) > 0:
+                    if self.storage > 0:
+                        if self.storage >= aux[0].detritus:
+                            self.storage -= aux[0].detritus
+                            aux[0].detritus = 0
+                        else:
+                            aux[0].detritus -= self.storage
+                            self.storage = 0
+
+                # Checamos si ya llegamos a la papelera
+                if self.pos == self.model.target:
+                    self.storage = 5
+                
+                trash = bfs(self.pos, self.model, self.top, self.bottom)
+                
+                if trash != ():
+                    self.path = dijkstra(self.pos, trash, self.model)
+                else:
+                    print("Terminé mi sección")
+                    return
+
+            # Avanzar
+            # aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
+            # SI ya recolectaste toda tu basura
+            # Llegar a la papelera
+            # Llegamos a basura
+            
+        else:    
             for row in self.mapa:
                 for col in row:
                     print(col, end= " ")
@@ -189,5 +234,3 @@ class Target (Agent):
 
         super().__init__(id, model)
         self.value = 'P'
-
-

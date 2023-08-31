@@ -12,14 +12,14 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 
 
 
-MAX_ITERATIONS = 40 # Total de iteraciones
+MAX_ITERATIONS = 25 # Total de iteraciones
 
 width = 0
 height = 0
 office = []
 
 flag = True
-with open('Tests/input1.txt', 'r') as input:
+with open('Tests/input0.txt', 'r') as input:
     
     for linea in input:
         if flag:
@@ -31,7 +31,7 @@ with open('Tests/input1.txt', 'r') as input:
 
 model = Office(width, height, office) # Inicializamos el modelo
 
-#print(dijkstra((0,0),(5,4), model)) # (start, end, map: Model)
+#print(dijkstra((0,0),(5,4), model).popleft()) # (start, end, map: Model)
 #print(BreadthFirstSearch((1,2),model))
 
 for i in range(MAX_ITERATIONS):
