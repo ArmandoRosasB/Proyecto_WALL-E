@@ -40,12 +40,6 @@ class Scavenger(Agent):
 
         self.steps += 1
         
-        neighbors = self.model.grid.get_neighbors(self.pos, moore = True, include_center = False)  # Regresa un vector
-        
-        movements = set()
-        neighborhood = set()
-        robots = set()
-
         self.visited.add(self.pos)
         print("Numero de pasos", self.steps)
         print("Celdas faltantes ", self.model.cells)
@@ -62,16 +56,7 @@ class Scavenger(Agent):
                     self.prev = []
 
                 else:
-                    neighbors = self.model.grid.get_neighbors(self.pos, moore = True, include_center = False)  # Regresa un vector
-
-                    for agent in neighbors:       
-                        if agent.value == 'X' or agent.value == 'R':
-                            robots.add(agent.pos)
-
-                        else: # Si no eres robot, eres un vecino candidato
-                            neighborhood.add(agent.pos)
-
-                    movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera 
+                    movements = getMovements(self, False)
                     back = True
 
                     diff = [(-1, -1), sys.maxsize]
@@ -103,25 +88,8 @@ class Scavenger(Agent):
 
 
             if self.ready:
-                for agent in neighbors:
-                    if agent.value == 'R': # Si eres robot u obstáculo ya no eres una posición disponible             
-                        robots.add(agent.pos)
-
-                    if agent.value == 'X':
-                        robots.add(agent.pos)
-
-                        if agent.pos not in self.visited:
-                            self.visited.add(agent.pos)
-                            if self.mapa[agent.pos[0]][agent.pos[1]] == -1:
-                                self.mapa[agent.pos[0]][agent.pos[1]] = 'X'
-                                self.model.cells -= 1
-
-                    else: # Si no eres robot, eres un vecino candidato
-                        neighborhood.add(agent.pos)
-
-                movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera 
                # print("PRE ", movements)
-                
+                movements = getMovements(self, True)
                 movements = [move for move in movements if move[0] <= self.top and move[0] >= self.bottom]
 
               #  print("POS ", movements)
@@ -152,57 +120,86 @@ class Scavenger(Agent):
                     if self.mapa[self.pos[0]][self.pos[1]] == -1:
                         self.mapa[self.pos[0]][self.pos[1]] = aux[0]
                         self.model.garbage += aux[0]
+        
+            """
+            elif self.model.garbage > 0: # Recolección
+                # Gate
+                curr_pos = self.model.target
+                while not self.setGate:
+                    if self.bottom <= curr_pos <= self.top:
+                        self.setGate = True
+                        self.gate = curr_pos
+                    else:
+                        # busqueda
 
-        elif self.model.garbage > 0: # Recolección
-            # Gate
-            curr_pos = self.model.target
-            while not self.setGate:
-                if self.bottom <= curr_pos <= self.top:
-                    self.setGate = True
-                    self.gate = curr_pos
-                else:
-                    # busqueda
 
+                if len(self.path) == 0 and :
 
-            if len(self.path) == 0 and :
+                if len(self.path) == 0:
+                    # Buscar basura en tu posición
+                    aux = [agent for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T' and agent.detritus > 0]
+                    
+                    if len(aux) > 0:
+                        if self.storage > 0:
+                            if self.storage >= aux[0].detritus:
+                                self.storage -= aux[0].detritus
+                                aux[0].detritus = 0
+                            else:
+                                aux[0].detritus -= self.storage
+                                self.storage = 0
 
-            if len(self.path) == 0:
-                # Buscar basura en tu posición
-                aux = [agent for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T' and agent.detritus > 0]
-                
-                if len(aux) > 0:
-                    if self.storage > 0:
-                        if self.storage >= aux[0].detritus:
-                            self.storage -= aux[0].detritus
-                            aux[0].detritus = 0
-                        else:
-                            aux[0].detritus -= self.storage
-                            self.storage = 0
+                    # Checamos si ya llegamos a la papelera
+                    if self.pos == self.model.target:
+                        self.storage = 5
+                    
+                    trash = bfs(self.pos, self.model, self.top, self.bottom)
+                    
+                    if trash != ():
+                        self.path = dijkstra(self.pos, trash, self.model)
+                    else:
+                        print("Terminé mi sección")
+                        return
 
-                # Checamos si ya llegamos a la papelera
-                if self.pos == self.model.target:
-                    self.storage = 5
-                
-                trash = bfs(self.pos, self.model, self.top, self.bottom)
-                
-                if trash != ():
-                    self.path = dijkstra(self.pos, trash, self.model)
-                else:
-                    print("Terminé mi sección")
-                    return
-
-            # Avanzar
-            # aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
-            # SI ya recolectaste toda tu basura
-            # Llegar a la papelera
-            # Llegamos a basura
-            
+                # Avanzar
+                # aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
+                # SI ya recolectaste toda tu basura
+                # Llegar a la papelera
+                # Llegamos a basura
+            """    
+        
         else:    
+            
             for row in self.mapa:
                 for col in row:
                     print(col, end= " ")
                 print()
 
+
+def getMovements(wallE:Agent, explorando:bool) -> set():
+    
+    neighbors = wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)  # Regresa un vector
+
+    neighborhood = set()
+    robots = set()
+    
+    for agent in neighbors:       
+        if agent.value == 'R':
+            robots.add(agent.pos)
+
+        elif agent.value == 'X':
+            robots.add(agent.pos)
+
+            if explorando and agent.pos not in wallE.visited:
+                wallE.visited.add(agent.pos)
+
+                if wallE.mapa[agent.pos[0]][agent.pos[1]] == -1:
+                    wallE.mapa[agent.pos[0]][agent.pos[1]] = 'X'
+                    wallE.model.cells -= 1
+
+        else: # Si no eres robot u obstáculo, eres un vecino candidato
+            neighborhood.add(agent.pos)
+
+    return neighborhood.difference(robots)
         
         
 class Trash(Agent):
