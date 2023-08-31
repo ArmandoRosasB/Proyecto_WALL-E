@@ -1,15 +1,38 @@
-# Paquetes para trabajar con agentes y modelos
-from mesa import Agent, Model
+from MultiCleaningSystem.Ugraph.Ugraph import dijkstra, BreadthFirstSearch as bfs
+from mesa import Agent, Model # Paquetes para trabajar con agentes y modelos
 from collections import deque
 import sys
-from MultiCleaningSystem.Ugraph.Ugraph import dijkstra, BreadthFirstSearch as bfs
+
+
+def getMovements(wallE:Agent, explorando:bool) -> set():
+    
+    neighbors = wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)  # Regresa un vector
+
+    neighborhood = set()
+    robots = set()
+    
+    for agent in neighbors:       
+        if agent.value == 'R':
+            robots.add(agent.pos)
+
+        elif agent.value == 'X':
+            robots.add(agent.pos)
+
+            if explorando and agent.pos not in wallE.visited:
+                wallE.visited.add(agent.pos)
+
+                if wallE.model.mapa[agent.pos[0]][agent.pos[1]] == -1:
+                    wallE.model.mapa[agent.pos[0]][agent.pos[1]] = 'X'
+                    wallE.model.cells -= 1
+
+        else: # Si no eres robot u obstáculo, eres un vecino candidato
+            neighborhood.add(agent.pos)
+
+    return neighborhood.difference(robots)
+
 
 class Scavenger(Agent):
     """ Clase heredada de mesa.agent que representa a un robot """
-
-    mapa = []
-    cells = 0
-    steps = 0
 
     def __init__(self, id: int, model: Model, bottom:int, top:int) -> None:
         """ El constructor recibe como parámetros el id del agente y el modelo 
@@ -19,11 +42,9 @@ class Scavenger(Agent):
         self.value = 'R'
         self.storage = 5
 
-        self.top = top
         self.bottom = bottom
-
-        self.extended_top = 0
-        self.extended_bottom = 0
+        self.ready = False
+        self.top = top
 
         self.visited = set()
         self.xVisit = []
@@ -32,16 +53,15 @@ class Scavenger(Agent):
         self.path = deque()
         self.gate = ()
         self.setGate = False
-
-        self.ready = False
+        
 
     def step(self) -> None:
         """ Este metodo mueve a los robots a la posición más óptima """
 
-        self.steps += 1
+        #self.model.steps += 1
         
         self.visited.add(self.pos)
-        print("Numero de pasos", self.steps)
+        print("Numero de pasos", self.model.steps)
         print("Celdas faltantes ", self.model.cells)
 
         if self.model.cells > 0: # Exploración
@@ -63,6 +83,7 @@ class Scavenger(Agent):
                     for move in movements:
                         if move not in self.visited:
                             top_diff = abs(move[0] - self.bottom)
+
                             if top_diff < diff[1]:
                                 diff[1] = top_diff
                                 diff[0] = move
@@ -91,7 +112,6 @@ class Scavenger(Agent):
                # print("PRE ", movements)
                 movements = getMovements(self, True)
                 movements = [move for move in movements if move[0] <= self.top and move[0] >= self.bottom]
-
               #  print("POS ", movements)
 
                 back = True
@@ -111,14 +131,14 @@ class Scavenger(Agent):
                 self.prev.append(self.pos)
                 self.model.grid.move_agent(self, self.xVisit.pop())
 
-                # if self.mapa[self.pos[0]][self.pos[1]] == -1:
+                # if self.model.mapa[self.pos[0]][self.pos[1]] == -1:
                 self.model.cells -= 1
 
                 aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
 
                 if len(aux) > 0:
-                    if self.mapa[self.pos[0]][self.pos[1]] == -1:
-                        self.mapa[self.pos[0]][self.pos[1]] = aux[0]
+                    if self.model.mapa[self.pos[0]][self.pos[1]] == -1:
+                        self.model.mapa[self.pos[0]][self.pos[1]] = aux[0]
                         self.model.garbage += aux[0]
         
             """
@@ -169,39 +189,12 @@ class Scavenger(Agent):
         
         else:    
             
-            for row in self.mapa:
+            for row in self.model.mapa:
                 for col in row:
                     print(col, end= " ")
                 print()
 
 
-def getMovements(wallE:Agent, explorando:bool) -> set():
-    
-    neighbors = wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)  # Regresa un vector
-
-    neighborhood = set()
-    robots = set()
-    
-    for agent in neighbors:       
-        if agent.value == 'R':
-            robots.add(agent.pos)
-
-        elif agent.value == 'X':
-            robots.add(agent.pos)
-
-            if explorando and agent.pos not in wallE.visited:
-                wallE.visited.add(agent.pos)
-
-                if wallE.mapa[agent.pos[0]][agent.pos[1]] == -1:
-                    wallE.mapa[agent.pos[0]][agent.pos[1]] = 'X'
-                    wallE.model.cells -= 1
-
-        else: # Si no eres robot u obstáculo, eres un vecino candidato
-            neighborhood.add(agent.pos)
-
-    return neighborhood.difference(robots)
-        
-        
 class Trash(Agent):
     """ Clase heredada de mesa.agent que representa una pila de basura """
 
@@ -213,6 +206,7 @@ class Trash(Agent):
         self.value = 'T'
         self.detritus = detritus
 
+
 class Wall (Agent):
     """ Clase heredada de mesa.agent que representa una pared u obstáculo"""
 
@@ -222,6 +216,7 @@ class Wall (Agent):
         super().__init__(id, model)
         
         self.value = 'X'
+
 
 class Target (Agent):
     """ Clase heredada de mesa.agent que representa la papelera"""
