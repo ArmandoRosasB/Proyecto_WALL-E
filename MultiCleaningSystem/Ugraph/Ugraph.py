@@ -13,6 +13,9 @@ class Node(object):
     
     def __lt__(self, other):
         return self.steps < other.steps
+    
+    def __eq__(self, other):
+        return self.pos == other.pos and self.steps == other.steps
 
 def BreadthFirstSearch(start, model: Model, top : int, bottom : int) -> list:
     visited = set()
@@ -43,7 +46,7 @@ def BreadthFirstSearch(start, model: Model, top : int, bottom : int) -> list:
                     
                     neighborhood.add(agent.pos)
 
-            movements = neighborhood.difference(robots) # Las posiciones que solo tengan basura o sean la papelera
+            movements = neighborhood.difference(robots) 
             movements = [move for move in movements if move[0] <= top and move[0] >= bottom]
             
             for node in movements:
@@ -51,7 +54,7 @@ def BreadthFirstSearch(start, model: Model, top : int, bottom : int) -> list:
         
     return ()
 
-def dijkstra(start, end, model: Model) -> list():
+def dijkstra(start:tuple, end:tuple, model: Model) -> list():
     visited = set()
 
     path = {}
@@ -76,7 +79,7 @@ def dijkstra(start, end, model: Model) -> list():
             neighbors = model.grid.get_neighbors(v, moore = True, include_center = False)  # Regresa un vector
 
             for agent in neighbors:       
-                if agent.value == 'X':
+                if agent.value == 'X' or agent.value == 'R':
                     robots.add(agent.pos)
                 
                 else:
@@ -86,10 +89,17 @@ def dijkstra(start, end, model: Model) -> list():
             
             for node in movements:
                 heapq.heappush(pending,Node(node, c + 1))
+                
                 if node not in path:
-                    path[node] = v
+                    path[(node)] = v
 
     minPath = [end]
+
+
+    if end not in path.keys():
+        print("No hay camino")
+        return deque()
+    
     node = path[end]
 
     while node != start:
