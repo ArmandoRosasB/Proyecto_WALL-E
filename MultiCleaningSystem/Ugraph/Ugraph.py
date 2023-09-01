@@ -17,7 +17,7 @@ class Node(object):
     def __eq__(self, other):
         return self.pos == other.pos and self.steps == other.steps
 
-def BreadthFirstSearch(start, model: Model, top : int, bottom : int) -> list:
+def BreadthFirstSearch(start: tuple, model: Model) -> list:
     visited = set()
     pending = deque()
 
@@ -35,26 +35,23 @@ def BreadthFirstSearch(start, model: Model, top : int, bottom : int) -> list:
             neighbors = model.grid.get_neighbors(v, moore = True, include_center = True)  # Regresa un vector
 
             for agent in neighbors:       
-                if agent.value == 'X' or agent.value == 'R':
+                if agent.value == 'X':
                     robots.add(agent.pos)
 
                 else: # Si no eres robot, eres un vecino candidato
-                    if agent.value != 'P' and agent.detritus > 0:
-                        
-                        if agent.pos[0] <= top and agent.pos[0] >= bottom:
-                            return agent.pos
+                    if agent.value != 'P' and agent.value != 'R' and agent.detritus > 0:
+                        return agent.pos
                     
                     neighborhood.add(agent.pos)
 
             movements = neighborhood.difference(robots) 
-            movements = [move for move in movements if move[0] <= top and move[0] >= bottom]
             
             for node in movements:
                 pending.append(node)
         
     return ()
 
-def dijkstra(start:tuple, end:tuple, model: Model) -> list():
+def dijkstra(start:tuple, end:tuple, model: Model) -> list :
     visited = set()
 
     path = {}
@@ -97,7 +94,6 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list():
 
 
     if end not in path.keys():
-        print("No hay camino")
         return deque()
     
     node = path[end]

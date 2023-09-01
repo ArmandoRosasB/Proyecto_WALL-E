@@ -60,6 +60,9 @@ class Office(Model):
         self.garbage = 0
         self.target = ()
 
+
+        self.done = False
+
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
             agent = None

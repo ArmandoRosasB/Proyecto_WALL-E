@@ -39,7 +39,7 @@ class Scavenger(Agent):
     def __init__(self, id: int, model: Model, bottom:int, top:int) -> None:
         """
         El constructor recibe como parámetros el id del agente y el modelo 
-        sobre le cual opera
+        sobre el cual opera
         """
         super().__init__(id, model)
 
@@ -56,16 +56,12 @@ class Scavenger(Agent):
 
         self.path = deque()
         self.gate = ()
-        self.setGate = False
-        self.idd = id
         
 
     def step(self) -> None:
-        """ Este metodo mueve a los robots a la posición más óptima """
+        """ Este método mueve a los robots a la posición más óptima """
 
         self.visited.add(self.pos)
-        print("Numero de pasos", self.model.steps)
-        print("Celdas faltantes ", self.model.cells)
 
         if self.model.cells > 0: # Exploración
 
@@ -74,9 +70,11 @@ class Scavenger(Agent):
                     self.ready = True
                     self.gate = self.pos
 
-                    # if self.gate == self.model.target:
-                    #     change = getMovements(self, False)
-                    #     self.gate = change[0]
+                    if self.gate == self.model.target:
+                        change = getMovements(self, False)
+                        change = [move for move in change if move[0] <= self.top and move[0] >= self.bottom]
+
+                        self.gate = list(change)[0]
 
                     self.visited = set()
                     self.xVisit = []
@@ -112,15 +110,11 @@ class Scavenger(Agent):
                     self.prev.append(self.pos)
                     self.model.grid.move_agent(self, self.xVisit.pop())                    
                     return
+            
                 
 
 
             if self.ready:
-                for row in self.model.mapa:
-                    for col in row:
-                        print(col, end= " ")
-                    print()
-
                 movements = getMovements(self, True)
                 movements = [move for move in movements if move[0] <= self.top and move[0] >= self.bottom]
 
@@ -149,65 +143,62 @@ class Scavenger(Agent):
 
                         self.model.garbage += aux[0]
                         self.model.cells -= 1
+            
+            if self.model.cells == 0:
+                print("Se termino de explorar")
+                for row in self.model.mapa:
+                    for column in row:
+                        print(column, end=" ")
+                    print()
+
         
         
         elif self.model.garbage > 0: # Recolección
-            print("Soy el robot", self.idd, "  con", 5 - self.storage, "basuras")
-
-            if self.pos == self.model.target: # Si llegaste a la papelera
+            if self.pos == self.model.target:
                 self.model.garbage -= (5 - self.storage)
                 self.storage = 5
-
-                if len(self.path) == 0: # Regresa a tu área
-                    self.path = dijkstra(self.pos, self.gate, self.model)
             
-            else:  
-                aux = [agent for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T' and agent.detritus > 0]
+            aux = [agent for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T' and agent.detritus > 0]
+            
+            if len(aux) > 0:
+                if self.storage > aux[0].detritus:
+                    self.model.mapa[aux[0].pos[0]][aux[0].pos[1]] = 0
+                    
+                    self.storage -= aux[0].detritus
+                    aux[0].detritus = 0
+                    
+                    
+                else: # trash > storage
+                    self.model.mapa[aux[0].pos[0]][aux[0].pos[1]] -= self.storage
+                    
+                    aux[0].detritus -= self.storage
+                    self.storage = 0
 
-                if len(aux) > 0: # Si hay basura en tu lugar
-                    if aux[0].detritus > self.storage: # Más basura que storage
-                        self.model.mapa[aux[0].pos[0]][aux[0].pos[1]] -= self.storage
-                        
-                        aux[0].detritus -= self.storage
-                        self.storage = 0
-
-                    else: # Más storage que basura
-                        self.model.mapa[aux[0].pos[0]][aux[0].pos[1]] = 0
-                        
-                        self.storage -= aux[0].detritus 
-                        aux[0].detritus = 0
-                        
-                if self.storage == 0: # Vas a la papelera
-                    print("Debo ir a la papelera", )
-                    self.path = dijkstra(self.pos, self.model.target, self.model)
+            if self.storage == 0:
+                self.path = dijkstra(self.pos, self.model.target, self.model)
                 
-                else: # Vas a otro lugar con basura
-                    if bfs(self.pos, self.model, self.top, self.bottom) == (): # Buscar más basura
-                        
-                        if self.storage < 5: # No hay, pero aún tienes en tu contenedor
-                            self.path = dijkstra(self.pos, self.model.target, self.model)
-                            
-                        else: # Acabaste con tu área
-                            for row in self.model.mapa:
-                                for col in row:
-                                    print(col, end= " ")
-                                print()
+            else:
+                self.path = dijkstra(self.pos, bfs(self.pos, self.model), self.model)
 
-                            return
+                if len(self.path) == 0:
+                    if self.storage != 5:
+                        self.path = dijkstra(self.pos, self.model.target, self.model)
                     
-                    else: # Ir a la basura
-                        print("Debo ir a la posicion ", bfs(self.pos, self.model, self.top, self.bottom))
-                        self.path = dijkstra(self.pos, bfs(self.pos, self.model, self.top, self.bottom), self.model)    
-                    
+                    else:
+                        self.path = dijkstra(self.pos, self.gate, self.model)
+            
             if len(self.path) > 0:
                 self.model.grid.move_agent(self, self.path.popleft())
-            else:
-                randomPos = list(getMovements(self, False))
-                self.model.grid.move_agent(self, randomPos[np.random.choice([i for i in range(len(randomPos))])])
-     
-            
-            
+        
+            if self.model.garbage == 0:
+                print("Se termino de limpiar")
+                for row in self.model.mapa:
+                    for column in row:
+                        print(column, end=" ")
+                    print()
 
+                self.model.done = True
+            
 
 class Trash(Agent):
     """ Clase heredada de mesa.agent que representa una pila de basura """

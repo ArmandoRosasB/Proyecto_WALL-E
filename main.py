@@ -10,16 +10,12 @@ import matplotlib.animation as animation
 plt.rcParams["animation.html"] = "jshtml"
 matplotlib.rcParams['animation.embed_limit'] = 2**128
 
-
-
-MAX_ITERATIONS = 1600 # Total de iteraciones
-
 width = 0
 height = 0
 office = []
 
 flag = True
-with open('Tests/input3.txt', 'r') as input:
+with open('Tests/input5.txt', 'r') as input:
     
     for linea in input:
         if flag:
@@ -31,14 +27,16 @@ with open('Tests/input3.txt', 'r') as input:
 
 model = Office(width, height, office) # Inicializamos el modelo
 
-#print(dijkstra((0,0),(5,4), model).popleft()) # (start, end, map: Model)
-#print(BreadthFirstSearch((1,2),model))
-
-for i in range(MAX_ITERATIONS):
+while not model.done:
     model.step()
+    for row in model.mapa:
+        for column in row:
+            print(column, end=" ")
+        print()
+    print()
+    print()
 
-#print(model.garbage)
-
+print("Algoritmo terminado en ", model.steps, " steps")
 # Visualizacion
 all_grid = model.datacollector.get_model_vars_dataframe() # Arreglo de matrices
 
@@ -47,10 +45,9 @@ axis.set_xticks([])
 axis.set_yticks([])
 patch = plt.imshow(all_grid.iloc[0][0], cmap=sns.color_palette("Paired", as_cmap=True))
 
-
 def animate(i):
     patch.set_data(all_grid.iloc[i][0])
     
-anim = animation.FuncAnimation(fig, animate, frames = MAX_ITERATIONS)
+anim = animation.FuncAnimation(fig, animate, frames = model.steps)
 
 plt.show()
