@@ -32,7 +32,7 @@ def BreadthFirstSearch(start: tuple, model: Model) -> list:
             robots = set()
             neighborhood = set()
 
-            neighbors = model.grid.get_neighbors(v, moore = True, include_center = True)  # Regresa un vector
+            neighbors = [agent for agent in model.grid.get_neighbors(v, moore = True, include_center = True)]  # Regresa un vector
 
             for agent in neighbors:       
                 if agent.value == 'X':
@@ -59,6 +59,7 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list :
     pending = [Node(start,0)]
     heapq.heapify(pending)
 
+
     while(len(pending) > 0):
         cell = heapq.heappop(pending)
         v = cell.pos
@@ -76,7 +77,7 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list :
             neighbors = model.grid.get_neighbors(v, moore = True, include_center = False)  # Regresa un vector
 
             for agent in neighbors:       
-                if agent.value == 'X' or agent.value == 'R':
+                if agent.value == 'X':# or agent.value == 'R':
                     robots.add(agent.pos)
                 
                 else:
@@ -89,11 +90,13 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list :
                 
                 if node not in path:
                     path[(node)] = v
+                    
 
     minPath = [end]
 
 
     if end not in path.keys():
+        print("Np se puede ir de ", start, " a ", end)
         return deque()
     
     node = path[end]

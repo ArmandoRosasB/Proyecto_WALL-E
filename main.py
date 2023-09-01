@@ -15,7 +15,7 @@ height = 0
 office = []
 
 flag = True
-with open('Tests/input5.txt', 'r') as input:
+with open('Tests/input3.txt', 'r') as input:
     
     for linea in input:
         if flag:

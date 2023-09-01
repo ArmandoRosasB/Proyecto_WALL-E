@@ -8,7 +8,7 @@ import sys
 
 def getMovements(wallE:Agent, explorando:bool) -> set():
     
-    neighbors = wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)  # Regresa un vector
+    neighbors = [agent for agent in wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)]  # Regresa un vector
 
     neighborhood = set()
     robots = set()
@@ -186,6 +186,7 @@ class Scavenger(Agent):
                     
                     else:
                         self.path = dijkstra(self.pos, self.gate, self.model)
+
             
             if len(self.path) > 0:
                 self.model.grid.move_agent(self, self.path.popleft())
