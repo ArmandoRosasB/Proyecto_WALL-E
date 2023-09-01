@@ -75,8 +75,14 @@ class Office(Model):
                 id += 1
                 robots = 5
           
-                if width <= 10:
-                    robots -= 3;
+                if width < 10:
+                    robots = 2
+
+                elif width < 16:
+                    robots = 3
+
+                elif width < 21:
+                    robots = 4
 
                 offset = 0
                 partition = [width // robots for i in range(5)]
