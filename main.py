@@ -16,7 +16,7 @@ office = []
 
 flag = True
 
-with open('Tests/input6.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input3.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:
@@ -31,11 +31,8 @@ model = Office(width, height, office) # Inicializamos el modelo
 
 while not model.clean:
     model.step()
-    
-    print("STEPS ", model.steps)
   
     for row in model.environment:
-        main
         for column in row:
             print(column, end=" ")
         print()
