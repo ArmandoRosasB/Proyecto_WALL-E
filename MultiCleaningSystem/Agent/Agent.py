@@ -155,12 +155,7 @@ class Scavenger(Agent):
             
             if self.model.cells == 0:
                 print("Se terminó de explorar ---> ", self.model.steps, " steps")
-                for row in self.model.mapa:
-                    for column in row:
-                        print(column, end=" ")
-                    print()
-                print()
-        
+
         
         elif self.model.garbage > 0: # Recolección
             if self.pos == self.model.paper_bin:
@@ -198,19 +193,18 @@ class Scavenger(Agent):
 
             
             if len(self.path) > 0:
-                self.model.grid.move_agent(self, self.path.popleft())
+                check = self.path.popleft()
+                aux = [agent for agent in self.model.grid.iter_cell_list_contents(check) if agent.value == 'R']
+                
+                if len(aux) == 0:
+                    self.model.grid.move_agent(self, check)
+                else:
+                    rand = list(get_movements(self, False))
+                    self.model.grid.move_agent(self, rand[np.random.choice([i for i in range(len(rand))])])
         
             if self.model.garbage == 0:
                 print("Se terminó de limpiar ---> ", self.model.steps, " steps")
                 self.model.clean = True
-                
-                for row in self.model.mapa:
-                    for column in row:
-                        print(column, end=" ")
-                    print()
-                print()
-
-                self.model.done = True
             
 
 class Trash(Agent):

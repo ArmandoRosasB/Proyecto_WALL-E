@@ -83,7 +83,7 @@ class Office(Model):
 
                 elif width < 21:
                     robots = 4
-
+                
                 offset = 0
                 partition = [width // robots for i in range(5)]
 

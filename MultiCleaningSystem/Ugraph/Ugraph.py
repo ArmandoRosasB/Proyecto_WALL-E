@@ -88,7 +88,7 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list :
             robots = set()
             neighborhood = set()
 
-            neighbors = model.grid.get_neighbors(v, moore = True, include_center = False) 
+            neighbors = [agent for agent in model.grid.get_neighbors(v, moore = True, include_center = False)]
 
             for agent in neighbors:       
                 if agent.value == 'X':
