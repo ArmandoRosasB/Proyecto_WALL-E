@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='MultiCleaningSystem',
-    version='1.0',
+    version='4.0',
     description='Paquete para modelar un sistema multiagente destinado a la limpieza automática de una ubicación',
     author='José Armando Rosas Balderas, Ramona Najera Fuentes',
     author_email='a01704132@tec.mx, a01423596@tec.mx',

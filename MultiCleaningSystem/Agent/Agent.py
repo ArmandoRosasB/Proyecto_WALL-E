@@ -1,14 +1,23 @@
 from MultiCleaningSystem.Ugraph.Ugraph import dijkstra, BreadthFirstSearch as bfs
 from mesa import Agent, Model # Paquetes para trabajar con agentes y modelos
 from collections import deque
-
 import numpy as np
 import sys
 
 
-def getMovements(wallE:Agent, explorando:bool) -> set():
+def get_movements(wallE: Agent, explorando: bool) -> set:
+    """
+    La funcion get_movements recibe como parametro un robot y un booleano
+    que representa
+        true: Modo busqueda
+        false: Modo limiapr
     
-    neighbors = [agent for agent in wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)]  # Regresa un vector
+        La funncion retorna todos los movimientos
+        posibles que puede hacer un robot dadas
+        las restricciones
+    """
+    
+    neighbors = [agent for agent in wallE.model.grid.get_neighbors(wallE.pos, moore = True, include_center = False)]
 
     neighborhood = set()
     robots = set()
@@ -23,8 +32,8 @@ def getMovements(wallE:Agent, explorando:bool) -> set():
             if explorando and agent.pos not in wallE.visited:
                 wallE.visited.add(agent.pos)
 
-                if wallE.model.mapa[agent.pos[0]][agent.pos[1]] == -1:
-                    wallE.model.mapa[agent.pos[0]][agent.pos[1]] = 'X'
+                if wallE.model.environment[agent.pos[0]][agent.pos[1]] == -1:
+                    wallE.model.environment[agent.pos[0]][agent.pos[1]] = 'X'
                     wallE.model.cells -= 1
 
         else: # Si no eres robot u obstáculo, eres un vecino candidato
@@ -65,13 +74,13 @@ class Scavenger(Agent):
 
         if self.model.cells > 0: # Exploración
 
-            if not self.ready:
+            if not self.ready: # Mandar al robot a su area de exploracion
                 if self.bottom <= self.pos[0] <= self.top:
                     self.ready = True
                     self.gate = self.pos
 
-                    if self.gate == self.model.target:
-                        change = getMovements(self, False)
+                    if self.gate == self.model.paper_bin:
+                        change = get_movements(self, False)
                         change = [move for move in change if move[0] <= self.top and move[0] >= self.bottom]
 
                         self.gate = list(change)[0]
@@ -81,7 +90,7 @@ class Scavenger(Agent):
                     self.prev = []
 
                 else:
-                    movements = getMovements(self, False)
+                    movements = get_movements(self, False)
                     back = True
 
                     diff = [(-1, -1), sys.maxsize]
@@ -114,8 +123,8 @@ class Scavenger(Agent):
                 
 
 
-            if self.ready:
-                movements = getMovements(self, True)
+            if self.ready: # Comenzando a explorar la seccion del mapa asignada
+                movements = get_movements(self, True)
                 movements = [move for move in movements if move[0] <= self.top and move[0] >= self.bottom]
 
                 back = True
@@ -138,23 +147,19 @@ class Scavenger(Agent):
                 aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
 
                 if len(aux) > 0:
-                    if self.model.mapa[self.pos[0]][self.pos[1]] == -1:
-                        self.model.mapa[self.pos[0]][self.pos[1]] = aux[0]
+                    if self.model.environment[self.pos[0]][self.pos[1]] == -1:
+                        self.model.environment[self.pos[0]][self.pos[1]] = aux[0]
 
                         self.model.garbage += aux[0]
                         self.model.cells -= 1
             
             if self.model.cells == 0:
-                print("Se termino de explorar")
-                for row in self.model.mapa:
-                    for column in row:
-                        print(column, end=" ")
-                    print()
+                print("Se termino de explorar", end="\n\n")
 
         
         
         elif self.model.garbage > 0: # Recolección
-            if self.pos == self.model.target:
+            if self.pos == self.model.paper_bin:
                 self.model.garbage -= (5 - self.storage)
                 self.storage = 5
             
@@ -162,27 +167,27 @@ class Scavenger(Agent):
             
             if len(aux) > 0:
                 if self.storage > aux[0].detritus:
-                    self.model.mapa[aux[0].pos[0]][aux[0].pos[1]] = 0
+                    self.model.environment[aux[0].pos[0]][aux[0].pos[1]] = 0
                     
                     self.storage -= aux[0].detritus
                     aux[0].detritus = 0
                     
                     
                 else: # trash > storage
-                    self.model.mapa[aux[0].pos[0]][aux[0].pos[1]] -= self.storage
+                    self.model.environment[aux[0].pos[0]][aux[0].pos[1]] -= self.storage
                     
                     aux[0].detritus -= self.storage
                     self.storage = 0
 
             if self.storage == 0:
-                self.path = dijkstra(self.pos, self.model.target, self.model)
+                self.path = dijkstra(self.pos, self.model.paper_bin, self.model)
                 
             else:
                 self.path = dijkstra(self.pos, bfs(self.pos, self.model), self.model)
 
                 if len(self.path) == 0:
                     if self.storage != 5:
-                        self.path = dijkstra(self.pos, self.model.target, self.model)
+                        self.path = dijkstra(self.pos, self.model.paper_bin, self.model)
                     
                     else:
                         self.path = dijkstra(self.pos, self.gate, self.model)
@@ -192,13 +197,8 @@ class Scavenger(Agent):
                 self.model.grid.move_agent(self, self.path.popleft())
         
             if self.model.garbage == 0:
-                print("Se termino de limpiar")
-                for row in self.model.mapa:
-                    for column in row:
-                        print(column, end=" ")
-                    print()
-
-                self.model.done = True
+                print("Se termino de limpiar", end="\n\n")
+                self.model.clean = True
             
 
 class Trash(Agent):
