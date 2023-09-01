@@ -15,7 +15,7 @@ height = 0
 office = []
 
 flag = True
-with open('Tests/input3.txt', 'r') as input:
+with open('Tests/input6.txt', 'r') as input:
     
     for linea in input:
         if flag:
@@ -29,6 +29,8 @@ model = Office(width, height, office) # Inicializamos el modelo
 
 while not model.done:
     model.step()
+
+    print("STEPS ", model.steps)
     for row in model.mapa:
         for column in row:
             print(column, end=" ")
