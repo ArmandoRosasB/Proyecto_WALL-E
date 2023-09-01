@@ -19,8 +19,10 @@ def get_grid(model):
 
     for (content, (x, y)) in model.grid.coord_iter():
 
+        """
         for c in colores:
             grid[c[0]][c[1]] = 4 # Robot
+        """
 
         if len(content) == 1:  
             if content[0].value == 'X':
@@ -35,7 +37,7 @@ def get_grid(model):
             continue
         
         colores.append([x, y])
-        grid[x][y] = 4000 # Robot
+        grid[x][y] = 4 # Robot
 
     return grid
 
@@ -56,7 +58,10 @@ class Office(Model):
         self.mapa = [[-1 for column in range (height)] for row in range (width)]
         
         self.garbage = 0
-        self.target = None
+        self.target = ()
+
+
+        self.done = False
 
         id = 0
         for (content, (x, y)) in self.grid.coord_iter():
@@ -67,15 +72,17 @@ class Office(Model):
 
             elif office[x][y] == 'P':
                 agent = Target(id, self)
+                self.target = (x, y)
 
-                self.target = [x, y]
                 self.mapa[x][y] = 'P'
+                self.cells -= 1
 
             elif office[x][y] == 'S':
                 agent = Trash(id, self, 0)
-
                 self.grid.place_agent(agent, (x, y))
+                
                 self.mapa[x][y] = 0
+                self.cells -= 1
 
                 id += 1
                 robots = 5
