@@ -4,7 +4,12 @@ import heapq
 from collections import deque
 
 class Node(object):
-    def __init__(self, pos, steps):
+    """
+    La clase nodo es una clase cuyas instancias
+    se componen de una tupla, representando una posicion
+    y un entero que representa el costo para llegar a tal coordenada
+    """
+    def __init__(self, pos: tuple, steps : int) -> None:
         self.pos = pos
         self.steps = steps
 
@@ -18,6 +23,10 @@ class Node(object):
         return self.pos == other.pos and self.steps == other.steps
 
 def BreadthFirstSearch(start: tuple, model: Model) -> list:
+    """
+    La funion BreadthFirstSearch realiza una busqueda en aplitud que devuelve
+    la primera posicion de basura encontrada
+    """
     visited = set()
     pending = deque()
 
@@ -32,7 +41,7 @@ def BreadthFirstSearch(start: tuple, model: Model) -> list:
             robots = set()
             neighborhood = set()
 
-            neighbors = [agent for agent in model.grid.get_neighbors(v, moore = True, include_center = True)]  # Regresa un vector
+            neighbors = [agent for agent in model.grid.get_neighbors(v, moore = True, include_center = True)] 
 
             for agent in neighbors:       
                 if agent.value == 'X':
@@ -52,6 +61,11 @@ def BreadthFirstSearch(start: tuple, model: Model) -> list:
     return ()
 
 def dijkstra(start:tuple, end:tuple, model: Model) -> list :
+    """
+    La funcion dijkstra recibe dos puntos y un modelo y regresa
+    el camino mas rapido a seguir para llegar del punto de 
+    inicio al punto final
+    """
     visited = set()
 
     path = {}
@@ -74,10 +88,10 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list :
             robots = set()
             neighborhood = set()
 
-            neighbors = model.grid.get_neighbors(v, moore = True, include_center = False)  # Regresa un vector
+            neighbors = model.grid.get_neighbors(v, moore = True, include_center = False) 
 
             for agent in neighbors:       
-                if agent.value == 'X':# or agent.value == 'R':
+                if agent.value == 'X':
                     robots.add(agent.pos)
                 
                 else:
@@ -96,7 +110,6 @@ def dijkstra(start:tuple, end:tuple, model: Model) -> list :
 
 
     if end not in path.keys():
-        print("Np se puede ir de ", start, " a ", end)
         return deque()
     
     node = path[end]
