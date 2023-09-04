@@ -347,6 +347,9 @@
 -r:"Library/Bee/artifacts/2400b0aE.dag/UnityEngine.UI.ref.dll"
 -analyzer:"/home/ramonanf/Unity/Hub/Editor/2022.3.8f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.Properties.SourceGenerator.dll"
 -analyzer:"/home/ramonanf/Unity/Hub/Editor/2022.3.8f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.SourceGenerators.dll"
+"Assets/Packages/DiverAndSubmarine/Scripts/Preview_DiverAndSubmarine.cs"
+"Assets/Packages/ScifiOfficeLite/Scripts/DemoDoor.cs"
+"Assets/Packages/ScifiOfficeLite/Scripts/DemoFirstPersonController.cs"
 "Assets/Scripts/Data/Model/APIHelper.cs"
 "Assets/Scripts/Data/Model/Model.cs"
 -langversion:9.0

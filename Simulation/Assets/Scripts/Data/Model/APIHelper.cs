@@ -14,10 +14,16 @@ public class APIHelper : MonoBehaviour {
     
     private Model info;
     private float secondsPerRequest;
+    private Vector3 fakePos = new Vector3(-1.0f, -1.0f, -1.0f);
+
+    private float x;
+    private float z;
+    public GameObject hidden;
+    List<List<GameObject>> mapInstances = new List<List<GameObject>>(); 
     
     //  IEnumerator:  Fetch the current element from a collection
     // yield return:  Returns a value, but doesn't “close the book” on the function
-    IEnumerator SendData(string data) {
+    IEnumerator SendData(string data, Action doLast) {
         string url = "http://localhost:8585";
         WWWForm form = new WWWForm();
 
@@ -66,23 +72,47 @@ public class APIHelper : MonoBehaviour {
                 
                 //yield return JsonUtility.FromJson<Model>(json);
             }
+            
+            doLast();
         }
     }
 
     void Start() {
         secondsPerRequest = 1;
+        
+        string json = EditorJsonUtility.ToJson(fakePos);
+        StartCoroutine( SendData(json,DoLastStart) );
+    }
+
+    void DoLastStart() {
+        x = 0;
+        z = 0;
+        
+        for(int i = 0; i < info.width; i++){
+            mapInstances.Add(new List<GameObject>());
+
+            for(int j = 0; j < info.height; j++){
+                GameObject tile = Instantiate(hidden, new Vector3(x, 0f, z), Quaternion.identity);
+                mapInstances[i].Add(tile);
+                
+                x += 2;
+            }
+            z -= 2;
+            x = 0;
+        }
     }
 
     void Update() {
         if(secondsPerRequest <= 0) {
-            Vector3 fakePos = new Vector3(-1.0f, -1.0f, -1.0f);
             string json = EditorJsonUtility.ToJson(fakePos);
-
-            StartCoroutine(SendData(json));
+            StartCoroutine( SendData(json,DoLastUpdate) );
 
             secondsPerRequest = 1;
         } else {
             secondsPerRequest -= Time.deltaTime;
         }
+    }
+
+    void DoLastUpdate() {
     }
 }
