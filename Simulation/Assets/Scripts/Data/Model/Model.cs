@@ -7,6 +7,9 @@ public class Model {
     public int width;
     public int height;
 
+    public int robots;
+    public List<List<int>> pos;
+
     public int steps;
     public string environment;
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 
 using UnityEngine.Networking;
+//using static System.Random;
 using UnityEditor;
 using UnityEngine; //Para la clase JsonUtility
 
@@ -18,8 +19,15 @@ public class APIHelper : MonoBehaviour {
 
     private float x;
     private float z;
-    public GameObject hidden;
-    List<List<GameObject>> mapInstances = new List<List<GameObject>>(); 
+
+    public GameObject robot;
+    public List<GameObject> floor = new List<GameObject>(); // Hidden | Discovered
+    public List<GameObject> trash = new List<GameObject>(); 
+    public List<GameObject> obstacles = new List<GameObject>(); 
+
+    List<GameObject> robotInstances = new List<GameObject>(); 
+    List<List<GameObject>> tileInstances = new List<List<GameObject>>(); 
+    List<List<GameObject>> trashInstances = new List<List<GameObject>>();
     
     //  IEnumerator:  Fetch the current element from a collection
     // yield return:  Returns a value, but doesn't “close the book” on the function
@@ -43,12 +51,6 @@ public class APIHelper : MonoBehaviour {
             } else {
                 string json = request.downloadHandler.text.Replace('\'', '\"'); // Answer from Python
                 info = JsonUtility.FromJson<Model>(json);
-
-                /*Debug.Log(info.width);
-                Debug.Log(info.height);
-
-                Debug.Log(info.steps);
-                Debug.Log(info.environment);*/
 
                 String[] separator = {","};
                 int count = info.width;
@@ -78,7 +80,7 @@ public class APIHelper : MonoBehaviour {
     }
 
     void Start() {
-        secondsPerRequest = 1;
+        secondsPerRequest = 0.5f;
         
         string json = EditorJsonUtility.ToJson(fakePos);
         StartCoroutine( SendData(json,DoLastStart) );
@@ -89,17 +91,20 @@ public class APIHelper : MonoBehaviour {
         z = 0;
         
         for(int i = 0; i < info.width; i++){
-            mapInstances.Add(new List<GameObject>());
+            tileInstances.Add(new List<GameObject>());
 
             for(int j = 0; j < info.height; j++){
-                GameObject tile = Instantiate(hidden, new Vector3(x, 0f, z), Quaternion.identity);
-                mapInstances[i].Add(tile);
-                
+                GameObject tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
+                tileInstances[i].Add(tile);
+
                 x += 2;
             }
             z -= 2;
             x = 0;
         }
+
+        // Add robot
+        //GameObject robot = Instantiate(----, new Vector3(x, 0f, z), Quaternion.identity);
     }
 
     void Update() {
@@ -107,12 +112,44 @@ public class APIHelper : MonoBehaviour {
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine( SendData(json,DoLastUpdate) );
 
-            secondsPerRequest = 1;
+            secondsPerRequest = 0.5f;
         } else {
             secondsPerRequest -= Time.deltaTime;
         }
     }
 
     void DoLastUpdate() {
+        x = 0;
+        z = 0;
+
+        for(int i = 0; i < info.width; i++){
+            for(int j = 0; j < info.height; j++){
+                GameObject tile = tileInstances[i][j];
+                Destroy(tile);
+
+                if (info.mapa[i][j] == "-1"){
+                    tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
+                } else {
+                    tile = Instantiate(floor[1], new Vector3(x, 0f, z), Quaternion.identity);
+                }
+                tileInstances[i][j] = tile;
+
+                // Cambiar para instanciar en el lugar correcto y monitorearlos
+                int basura;
+                bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+
+                if (isNumeric) {
+                    for(int k = 0; k < basura; k++){
+                        System.Random rnd = new System.Random();
+                        System.Random rnd2 = new System.Random();
+                        Instantiate(trash[ rnd.Next(0, trash.Count - 1) ], new Vector3((float)rnd2.NextDouble() * ((x + 1f) - (x - 1f)) + (x - 1f), 1f, (float)rnd2.NextDouble() * ((z + 1f) - (z - 1f)) + (z - 1f)), Quaternion.identity);
+                    }
+                }
+                
+                x += 2;
+            }
+            z -= 2;
+            x = 0;
+        }
     }
 }

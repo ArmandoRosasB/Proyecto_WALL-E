@@ -24,7 +24,7 @@ office = []
 
 flag = True
 
-with open('Tests/input1.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input7.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:
@@ -72,6 +72,9 @@ class Server(BaseHTTPRequestHandler):
         info = {
             "width": model.grid.width,
             "height": model.grid.height,
+
+            "robots": len(model.robots_positions),
+            "pos": model.robots_positions,
             
             "steps": model.steps,
             "environment" : mapa
@@ -109,7 +112,6 @@ else:
 """
 while not model.clean:
    model.step()
-  
 
 print("Algoritmo terminado en ", model.steps, " steps")
 # Visualizacion

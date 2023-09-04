@@ -47,8 +47,6 @@ class Office(Model):
         
         self.garbage = 0
         self.paper_bin = ()
-
-
         self.clean = False
 
         self.robots_positions = []
@@ -57,17 +55,17 @@ class Office(Model):
         for (content, (x, y)) in self.grid.coord_iter(): # Acomodar a los agentes como muestra en el mapa
             agent = None
 
-            if office[x][y] == 'X':
+            if office[x][y].strip() == 'X':
                 agent = Wall(id, self)
 
-            elif office[x][y] == 'P':
+            elif office[x][y].strip() == 'P':
                 agent = Target(id, self)
                 self.paper_bin = (x, y)
 
                 self.environment[x][y] = 'P'
                 self.cells -= 1
 
-            elif office[x][y] == 'S':
+            elif office[x][y].strip() == 'S':
                 agent = Trash(id, self, 0)
                 self.grid.place_agent(agent, (x, y))
                 
@@ -85,6 +83,8 @@ class Office(Model):
 
                 elif width < 21:
                     robots = 4
+
+                self.robots_positions = [[0,0] for robot in range(robots)]
                 
                 offset = 0
                 partition = [width // robots for i in range(5)]
@@ -93,13 +93,13 @@ class Office(Model):
                     partition[i] += 1
 
                 for i in range(robots):
-                    agent = Scavenger(id, self,  offset, offset + partition[i] - 1)
+                    agent = Scavenger(id, self,  offset, offset + partition[i] - 1, i)
                     offset += partition[i]
 
                     self.grid.place_agent(agent, (x, y))
                     self.schedule.add(agent)
-                    
-                    self.robots_positions.append((x, y))
+
+                    self.robots_positions[i] = [agent.pos[0],agent.pos[1]]
 
                     id += 1
                 
