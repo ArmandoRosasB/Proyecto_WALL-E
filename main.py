@@ -53,16 +53,32 @@ class Server(BaseHTTPRequestHandler):
 
     def do_POST(self):
         global model
-
         model.step()
+        
 
-        position = {
+        mapa = ""
+        for row in range( len(model.environment) ):
+
+            for col in range( len(model.environment[row]) ):
+                mapa += str(model.environment[row][col])
+
+                if col != len(model.environment[row]) - 1: 
+                    mapa += "*"
+            
+            if row != len(model.environment) -1: 
+                mapa += ","
+
+
+        info = {
+            "width": model.grid.width,
+            "height": model.grid.height,
+            
             "steps": model.steps,
-            "environment" : model.environment
+            "environment" : mapa
         }
         
         self._set_response()
-        self.wfile.write(str(position).encode('utf-8'))
+        self.wfile.write(str(info).encode('utf-8'))
 
 
 def run(server_class = HTTPServer, handler_class = Server, port = 8585):
