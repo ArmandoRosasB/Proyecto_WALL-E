@@ -155,6 +155,11 @@ class Scavenger(Agent):
             
             if self.model.cells == 0:
                 print("Se terminó de explorar ---> ", self.model.steps, " steps")
+                for row in self.model.environment:
+                    for column in row:
+                        print(column, end=" ")
+                    print()
+                print()
 
         
         elif self.model.garbage > 0: # Recolección
@@ -204,6 +209,12 @@ class Scavenger(Agent):
         
             if self.model.garbage == 0:
                 print("Se terminó de limpiar ---> ", self.model.steps, " steps")
+                for row in self.model.environment:
+                    for column in row:
+                        print(column, end=" ")
+                    print()
+                print()
+
                 self.model.clean = True
             
 
