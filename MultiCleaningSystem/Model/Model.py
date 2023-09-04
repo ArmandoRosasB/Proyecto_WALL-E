@@ -51,6 +51,8 @@ class Office(Model):
 
         self.clean = False
 
+        self.robots_positions = []
+
         id = 0
         for (content, (x, y)) in self.grid.coord_iter(): # Acomodar a los agentes como muestra en el mapa
             agent = None
@@ -96,6 +98,8 @@ class Office(Model):
 
                     self.grid.place_agent(agent, (x, y))
                     self.schedule.add(agent)
+                    
+                    self.robots_positions.append((x, y))
 
                     id += 1
                 
