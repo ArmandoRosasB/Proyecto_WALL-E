@@ -24,7 +24,7 @@ office = []
 
 flag = True
 
-with open('Tests/input7.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input3.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:
@@ -36,7 +36,7 @@ with open('Tests/input7.txt', 'r') as input: # Abriendo el mapa
 
 model = Office(width, height, office) # Inicializamos el modelo
 
-
+"""
 class Server(BaseHTTPRequestHandler):
     
     def _set_response(self):
@@ -113,7 +113,6 @@ else:
 while not model.clean:
    model.step()
 
-print("Algoritmo terminado en ", model.steps, " steps")
 # Visualizacion
 all_grid = model.datacollector.get_model_vars_dataframe() # Arreglo de matrices
 
@@ -128,4 +127,4 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate, frames = model.steps)
 
 plt.show()
-"""
+
