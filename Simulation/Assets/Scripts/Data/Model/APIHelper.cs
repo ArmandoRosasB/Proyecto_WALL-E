@@ -12,7 +12,7 @@ using System.IO;
 
 public class APIHelper : MonoBehaviour {
     
-    private Model info;
+    public static Model info;
     private bool explorar;
     private float secondsPerRequest;
     private Vector3 fakePos = new Vector3(-1.0f, -1.0f, -1.0f);
@@ -27,12 +27,10 @@ public class APIHelper : MonoBehaviour {
     public List<GameObject> floor = new List<GameObject>(); // Hidden | Discovered
     public List<GameObject> trash = new List<GameObject>(); 
     public List<GameObject> obstacle = new List<GameObject>(); 
-    
-    public List<Tuple<int, int>> obstacles = new List<Tuple<int, int>>(); 
 
     private List<GameObject> robotInstances = new List<GameObject>(); 
     private List<List<GameObject>> tileInstances = new List<List<GameObject>>(); 
-    private List<List<GameObject>> trashInstances = new List<List<GameObject>>();
+    private List<List<List<GameObject>>> trashInstances = new List<List<List<GameObject>>>();
     
     //  IEnumerator:  Fetch the current element from a collection
     // yield return:  Returns a value, but doesn't “close the book” on the function
@@ -57,36 +55,23 @@ public class APIHelper : MonoBehaviour {
                 string json = request.downloadHandler.text.Replace('\'', '\"'); // Answer from Python
                 info = JsonUtility.FromJson<Model>(json);
 
-                String[] separator = {","};
-                int count = info.width;
-                String[] rows = info.environment.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
-            
+                // Reconstruimos el mapa
                 info.mapa = new List<List<string>>();
-                separator[0] = "*";
-                count = info.height;
-
+                String[] rows = info.environment.Split(",", info.width, StringSplitOptions.RemoveEmptyEntries);
+                
                 for(int i = 0; i < info.width; i++) {
-                    info.mapa.Add(rows[i].Split(separator, count, StringSplitOptions.RemoveEmptyEntries).ToList());
+                    info.mapa.Add(rows[i].Split("*", info.height, StringSplitOptions.RemoveEmptyEntries).ToList());
                 }
 
-                // ----------------------------------------------------------
-                /*string map = "";
-                for(int i = 0; i < info.mapa.Count; i++) {
+                // Reconstruimos las posiciones
+                info.pos = new List<Vector3>();
 
-                    for(int j = 0; j < info.mapa[i].Count; j++) {
-                        map += info.mapa[i][j];
+                rows = info.positions.Split(",", info.robots, StringSplitOptions.RemoveEmptyEntries);
 
-                        if(j != info.mapa[i].Count - 1){
-                            map += "/";
-                        }
-                    }
-
-                    if(i != info.mapa.Count - 1){
-                        map += "/";
-                    }
+                for(int i = 0; i < info.robots; i++){
+                    String [] aux = rows[i].Split("*", 2, StringSplitOptions.RemoveEmptyEntries);
+                    info.pos.Add(new Vector3((float) Convert.ToDouble(aux[0]), 1f, (float) Convert.ToDouble(aux[1])));
                 }
-                Debug.Log(map);*/
-                // ----------------------------------------------------------
             }
 
             doLast();
@@ -105,16 +90,17 @@ public class APIHelper : MonoBehaviour {
         x = 0;
         z = 0;
 
+        CameraController.flag = true;
+
         for(int i = 0; i < info.width; i++){
             tileInstances.Add(new List<GameObject>());
+            trashInstances.Add(new List<List<GameObject>>());
 
             for(int j = 0; j < info.height; j++){
                 GameObject tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
+                
                 tileInstances[i].Add(tile);
-
-                /*if(i == 4 && j == 6) {
-                    Debug.Log(info.mapa[i][j]);
-                }*/
+                trashInstances[i].Add(new List<GameObject>());
 
                 if(info.mapa[i][j].Trim() == "X") {
                     Instantiate(obstacle[ rndInt.Next(0, obstacle.Count - 1) ], new Vector3(x, 1f, z), Quaternion.identity);
@@ -122,29 +108,33 @@ public class APIHelper : MonoBehaviour {
                 } else if(info.mapa[i][j].Trim() == "P") {
                     Instantiate(papelera, new Vector3(x, 1f, z), Quaternion.identity);
 
-                } if(info.mapa[i][j].Trim() == "S") {
-                    info.pos = new List<List<float>>();
+                } else if(info.mapa[i][j].Trim() == "S") {
+                    info.pos = new List<Vector3>();
 
                     for(int r = 0; r < info.robots; r++) {
-                        GameObject newRobot = Instantiate(robot, new Vector3(x, 1f, z), Quaternion.identity);
-                        
-                        info.pos.Add(new List<float>());
-                        info.pos[r].Add(x);
-                        info.pos[r].Add(z);
-
+                        info.pos.Add(new Vector3(x, 1f, z));
+                        GameObject newRobot = Instantiate(robot, info.pos[r], Quaternion.identity);
                         robotInstances.Add(newRobot);
                     }
+                
+                } else { // Basura
+                    int basura;
+                    bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+
+                    if (isNumeric) {
+                        for(int k = 0; k < basura; k++){
+                            float rango = 0.5f;
+                            GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), 1f, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
+                            trashInstances[i][j].Add(newTrash);
+                        }
+                    }
                 }
-                // FALTA else{ Instanciar basura }
 
                 x += 2;
             }
             z -= 2;
             x = 0;
         }
-
-        // Add robot
-        //GameObject robot = Instantiate(----, new Vector3(x, 0f, z), Quaternion.identity);
     }
 
     void Update() {
@@ -161,6 +151,14 @@ public class APIHelper : MonoBehaviour {
     void DoLastUpdate() {
         x = 0;
         z = 0;
+
+        for(int i = 0; i < info.robots; i++) {
+            GameObject bobot = robotInstances[i];
+            Destroy(bobot);
+
+            GameObject movingRobot = Instantiate(robot, info.pos[i], Quaternion.identity);
+            robotInstances[i] = movingRobot;
+        }
 
         if(explorar == true) {
             for(int i = 0; i < info.width; i++){
@@ -183,43 +181,29 @@ public class APIHelper : MonoBehaviour {
 
             if(info.cells == 0) {
                 explorar = false;
+                Debug.Log("Exploración terminada");
+                Debug.Log(info.steps);
+            }
+
+        } else {
+            for(int i = 0; i < info.width; i++){
+                for(int j = 0; j < info.height; j++){
+                    int basura;
+                    bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+
+                    if (isNumeric) {
+                        if(trashInstances[i][j].Count > basura) {
+                            int delete = trashInstances[i][j].Count - basura;
+
+                            for(int d = trashInstances[i][j].Count - 1; d >= 0; d--) {
+                                GameObject del = trashInstances[i][j][d];
+                                trashInstances[i][j].RemoveAt(d);
+                                Destroy(del);
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        /*for(int i = 0; i < info.width; i++){
-            for(int j = 0; j < info.height; j++){
-                GameObject tile = tileInstances[i][j];
-                Destroy(tile);
-
-                if (info.mapa[i][j] == "-1"){
-                    tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
-                } else {
-                    tile = Instantiate(floor[1], new Vector3(x, 0f, z), Quaternion.identity);
-                }
-                tileInstances[i][j] = tile;
-
-                // Obstáculos
-                if (info.mapa[i][j] == "X" && !obstacles.Contains(Tuple.Create(i,j))){
-                    Instantiate(obstacle[ rndInt.Next(0, obstacle.Count - 1) ], new Vector3(x, 0f, z), Quaternion.identity);
-                    obstacles.Add(Tuple.Create(i,j));
-                }*/
-
-                // Cambiar para instanciar en el lugar correcto y monitorearlos
-                /*int basura;
-                bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
-
-                if (isNumeric) {
-                    for(int k = 0; k < basura; k++){
-                        System.Random rnd = new System.Random();
-                        System.Random rnd2 = new System.Random();
-                        Instantiate(trash[ rnd.Next(0, trash.Count - 1) ], new Vector3((float)rnd2.NextDouble() * ((x + 1f) - (x - 1f)) + (x - 1f), 1f, (float)rnd2.NextDouble() * ((z + 1f) - (z - 1f)) + (z - 1f)), Quaternion.identity);
-                    }
-                }*//*
-                
-                x += 2;
-            }
-            z -= 2;
-            x = 0;
-        }*/
     }
 }

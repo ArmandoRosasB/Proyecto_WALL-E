@@ -24,7 +24,7 @@ office = []
 stage = 0 # 0:Start | 1:Exploración y Recolección
 flag = True
 
-with open('Tests/input6.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input0.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:
@@ -32,7 +32,7 @@ with open('Tests/input6.txt', 'r') as input: # Abriendo el mapa
             flag = False
         
         else:
-            office.append(linea.split(" "))
+            office.append(linea.strip().split(" "))
 
 model = Office(width, height, office) # Inicializamos el modelo
 
@@ -67,16 +67,23 @@ class Server(BaseHTTPRequestHandler):
 
         mapa = ""
         for row in range( len(modelEnv) ):
-
             for col in range( len(modelEnv[row]) ):
-                mapa += str(modelEnv[row][col]).strip()
+                if col < len(modelEnv[row]) - 1:
+                    mapa += str(modelEnv[row][col]).strip() + "*"
+                else:
+                    mapa += str(modelEnv[row][col]).strip()
 
-                if col < len(modelEnv[row]) - 1: # ??
-                    mapa += "*"
-            
-            if row != len(modelEnv) -1: 
+            if row < len(modelEnv) - 1:
                 mapa += ","
-        print(mapa)
+
+
+        pos = ""
+        for elem in range( len(model.robots_positions) ):
+            pos += str(model.robots_positions[elem][0]) + "*" + str(model.robots_positions[elem][1])
+
+            if elem < len(model.robots_positions) - 1:
+                pos += ","
+        
 
         info = {
             "width": model.grid.width,
@@ -86,13 +93,11 @@ class Server(BaseHTTPRequestHandler):
             "garbage": model.garbage,
 
             "robots": len(model.robots_positions),
-            "pos": model.robots_positions,
+            "positions": pos, #model.robots_positions,
             
             "steps": model.steps,
             "environment" : mapa
         }
-
-        print(len(modelEnv), len(modelEnv[0]))
         
         self._set_response()
         self.wfile.write(str(info).encode('utf-8'))
