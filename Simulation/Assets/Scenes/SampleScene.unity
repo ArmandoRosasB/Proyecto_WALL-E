@@ -297,7 +297,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &705507994
 Light:
   m_ObjectHideFlags: 0
@@ -480,6 +480,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 533cfd5208391ea15a528a380e634047, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  horizontal: 0
+  vertical: 0
 --- !u!1 &970813297
 GameObject:
   m_ObjectHideFlags: 0
@@ -577,11 +579,20 @@ MonoBehaviour:
   papelera: {fileID: 6325462893193420730, guid: 32d7cd7a377627947bb03073cc737660, type: 3}
   floor:
   - {fileID: 1417341670178463359, guid: 3c06c72c58af3011e8220a7b8aa08900, type: 3}
-  - {fileID: 3198025313691309553, guid: cb4e99102ed550e87a94b84cd1ec6998, type: 3}
+  - {fileID: 3464554102945946751, guid: d96efb3011a6b77e1a49206c17055a81, type: 3}
   trash:
-  - {fileID: 100000, guid: bfe4bd7ca2c7a254dbc9bcd23bb71cbe, type: 3}
-  - {fileID: 100000, guid: 10aa997cce14d3d41be3c9405d8ccb94, type: 3}
-  - {fileID: 100000, guid: eef823a0d743d8942b54d878cc992b37, type: 3}
+  - {fileID: 390573556264658025, guid: 0bfb617990bde61119e3281d15976534, type: 3}
+  - {fileID: 1201173382552288521, guid: 247a8afa7eb8a4f4588b87018184d6cd, type: 3}
+  - {fileID: 7956084058676667321, guid: f6c8ebaa143d2e8deb7a97cf02d96bb4, type: 3}
+  - {fileID: 7155790663282423455, guid: 975c73daab0209e669e3f942fd1b6379, type: 3}
+  - {fileID: 3575422823025150998, guid: 4ffe4f5c0e26c2993bcd5b312c29834d, type: 3}
+  - {fileID: 6571584969178303067, guid: 040ff43e3ab3363fd9ead044e1fc20a8, type: 3}
+  - {fileID: 1600221343588360943, guid: 1c24c91ccdc15794ab3d08381a3ea583, type: 3}
+  - {fileID: 7495301438864223931, guid: 42601e217b673d2e286c337594e3cc84, type: 3}
+  - {fileID: 1313517014061507221, guid: 64e3dcdda6b1c011a90be182dfbf0c0f, type: 3}
+  - {fileID: 495949727782945830, guid: 3b5c85923bcb7ac19a469b93be0bed1e, type: 3}
+  - {fileID: 2891049597900541552, guid: 59896d3df784980259f1e6f67544dab4, type: 3}
+  - {fileID: 1948644503077043461, guid: fb1d070c94775570cb74a884e3361e9a, type: 3}
   obstacle:
   - {fileID: 7744985191007326568, guid: be6642d7cfc894df0aa23007b19e5098, type: 3}
   - {fileID: 199023738001758344, guid: e262aed9fc42f3a9a86a2f40593d25ca, type: 3}
