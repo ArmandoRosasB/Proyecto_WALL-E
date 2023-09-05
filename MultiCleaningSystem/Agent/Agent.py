@@ -45,7 +45,7 @@ def get_movements(wallE: Agent, explorando: bool) -> set:
 class Scavenger(Agent):
     """ Clase heredada de mesa.agent que representa a un robot """
 
-    def __init__(self, id: int, model: Model, bottom:int, top:int) -> None:
+    def __init__(self, id: int, model: Model, bottom:int, top:int, uuid:int) -> None:
         """
         El constructor recibe como parámetros el id del agente y el modelo 
         sobre el cual opera
@@ -65,6 +65,8 @@ class Scavenger(Agent):
 
         self.path = deque()
         self.gate = ()
+
+        self.uuid = uuid
         
 
     def step(self) -> None:
@@ -109,6 +111,7 @@ class Scavenger(Agent):
                     if len(movements) == 0 or back:
                         if (len(self.prev) > 0):
                             self.model.grid.move_agent(self, self.prev.pop())
+                            self.model.robots_positions[self.uuid] = [self.pos[0],self.pos[1]]
                         return
 
                     if diff[0] in self.xVisit:
@@ -117,7 +120,8 @@ class Scavenger(Agent):
 
 
                     self.prev.append(self.pos)
-                    self.model.grid.move_agent(self, self.xVisit.pop())                    
+                    self.model.grid.move_agent(self, self.xVisit.pop())  
+                    self.model.robots_positions[self.uuid] = [self.pos[0],self.pos[1]]                 
                     return
             
                 
@@ -139,10 +143,12 @@ class Scavenger(Agent):
                 if len(movements) == 0 or back:
                     if len(self.prev) > 0:
                         self.model.grid.move_agent(self, self.prev.pop())
+                        self.model.robots_positions[self.uuid] = [self.pos[0],self.pos[1]]
                     return
 
                 self.prev.append(self.pos)
                 self.model.grid.move_agent(self, self.xVisit.pop())
+                self.model.robots_positions[self.uuid] = [self.pos[0],self.pos[1]]
 
                 aux = [agent.detritus for agent in self.model.grid.iter_cell_list_contents(self.pos) if agent.value == 'T']
 
@@ -203,9 +209,13 @@ class Scavenger(Agent):
                 
                 if len(aux) == 0:
                     self.model.grid.move_agent(self, check)
+                    self.model.robots_positions[self.uuid] = [self.pos[0],self.pos[1]]
                 else:
                     rand = list(get_movements(self, False))
-                    self.model.grid.move_agent(self, rand[np.random.choice([i for i in range(len(rand))])])
+
+                    if len(rand) > 0:
+                        self.model.grid.move_agent(self, rand[np.random.choice([i for i in range(len(rand))])])
+                        self.model.robots_positions[self.uuid] = [self.pos[0],self.pos[1]]
         
             if self.model.garbage == 0:
                 print("Se terminó de limpiar ---> ", self.model.steps, " steps")
