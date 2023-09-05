@@ -163,7 +163,7 @@ public class APIHelper : MonoBehaviour {
             robotInstances[i] = movingRobot;
         }
 
-        if(explorar == true) {
+        //if(explorar == true) {
             for(int i = 0; i < info.width; i++){
                 for(int j = 0; j < info.height; j++){
                     GameObject tile = tileInstances[i][j];
@@ -188,7 +188,7 @@ public class APIHelper : MonoBehaviour {
                 Debug.Log(info.steps);
             }
 
-        } else {
+        //} else {
             for(int i = 0; i < info.width; i++){
                 for(int j = 0; j < info.height; j++){
                     int basura;
@@ -207,6 +207,6 @@ public class APIHelper : MonoBehaviour {
                     }
                 }
             }
-        }
+        //}
     }
 }

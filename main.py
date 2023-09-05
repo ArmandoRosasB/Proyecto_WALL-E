@@ -24,7 +24,7 @@ office = []
 stage = 0 # 0:Start | 1:Exploración y Recolección
 flag = True
 
-with open('Tests/input2.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input3.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:
@@ -132,7 +132,6 @@ else:
 while not model.clean:
    model.step()
 
-print("Algoritmo terminado en ", model.steps, " steps")
 # Visualizacion
 all_grid = model.datacollector.get_model_vars_dataframe() # Arreglo de matrices
 

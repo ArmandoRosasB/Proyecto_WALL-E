@@ -32,9 +32,10 @@ def get_movements(wallE: Agent, explorando: bool) -> set:
             if explorando and agent.pos not in wallE.visited:
                 wallE.visited.add(agent.pos)
 
-                if wallE.model.environment[agent.pos[0]][agent.pos[1]] == -1:
+                if wallE.model.environment[agent.pos[0]][agent.pos[1]] == -1 and wallE.bottom <= agent.pos[0] <= wallE.top:
                     wallE.model.environment[agent.pos[0]][agent.pos[1]] = 'X'
                     wallE.model.cells -= 1
+                    wallE.own_cells -= 1
 
         else: # Si no eres robot u obstáculo, eres un vecino candidato
             neighborhood.add(agent.pos)
@@ -65,6 +66,7 @@ class Scavenger(Agent):
 
         self.path = deque()
         self.gate = ()
+        self.own_cells = model.grid.height * (top - bottom + 1)
 
         self.uuid = uuid
         
@@ -74,7 +76,7 @@ class Scavenger(Agent):
 
         self.visited.add(self.pos)
 
-        if self.model.cells > 0: # Exploración
+        if self.own_cells > 0 and self.model.cells > 0:  # Exploración
 
             if not self.ready: # Mandar al robot a su area de exploracion
                 if self.bottom <= self.pos[0] <= self.top:
@@ -158,8 +160,9 @@ class Scavenger(Agent):
 
                         self.model.garbage += aux[0]
                         self.model.cells -= 1
+                        self.own_cells -= 1
             
-            if self.model.cells == 0:
+            if self.model.cells == 0:#model.cells == 0:
                 print("Se terminó de explorar ---> ", self.model.steps, " steps")
                 for row in self.model.environment:
                     for column in row:
