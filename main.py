@@ -24,7 +24,7 @@ office = []
 stage = 0 # 0:Start | 1:Exploración y Recolección
 flag = True
 
-with open('Tests/input0.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input2.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:

@@ -28,7 +28,7 @@ public class APIHelper : MonoBehaviour {
     public List<GameObject> trash = new List<GameObject>(); 
     public List<GameObject> obstacle = new List<GameObject>(); 
 
-    private List<GameObject> robotInstances = new List<GameObject>(); 
+    public static List<GameObject> robotInstances = new List<GameObject>(); 
     private List<List<GameObject>> tileInstances = new List<List<GameObject>>(); 
     private List<List<List<GameObject>>> trashInstances = new List<List<List<GameObject>>>();
     
@@ -70,7 +70,7 @@ public class APIHelper : MonoBehaviour {
 
                 for(int i = 0; i < info.robots; i++){
                     String [] aux = rows[i].Split("*", 2, StringSplitOptions.RemoveEmptyEntries);
-                    info.pos.Add(new Vector3((float) Convert.ToDouble(aux[0]), 1f, (float) Convert.ToDouble(aux[1])));
+                    info.pos.Add(new Vector3((float)Convert.ToDouble(aux[0]), 1f, (float)Convert.ToDouble(aux[1])));
                 }
             }
 
@@ -79,7 +79,7 @@ public class APIHelper : MonoBehaviour {
     }
 
     void Start() {
-        secondsPerRequest = 0.5f;
+        secondsPerRequest = 1f; //0.5f;
         explorar = true;
         
         string json = EditorJsonUtility.ToJson(fakePos);
@@ -123,7 +123,7 @@ public class APIHelper : MonoBehaviour {
 
                     if (isNumeric) {
                         for(int k = 0; k < basura; k++){
-                            float rango = 0.5f;
+                            float rango = 0.75f;
                             GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), 1f, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
                             trashInstances[i][j].Add(newTrash);
                         }
@@ -133,8 +133,10 @@ public class APIHelper : MonoBehaviour {
                 x += 2;
             }
             z -= 2;
+            CameraController.x = x;
             x = 0;
         }
+        CameraController.z = z;
     }
 
     void Update() {
@@ -142,7 +144,7 @@ public class APIHelper : MonoBehaviour {
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine( SendData(json,DoLastUpdate) );
 
-            secondsPerRequest = 0.5f;
+            secondsPerRequest = 1f; //0.5f;
         } else {
             secondsPerRequest -= Time.deltaTime;
         }
@@ -156,7 +158,8 @@ public class APIHelper : MonoBehaviour {
             GameObject bobot = robotInstances[i];
             Destroy(bobot);
 
-            GameObject movingRobot = Instantiate(robot, info.pos[i], Quaternion.identity);
+            Vector3 auxPos = tileInstances[(int)info.pos[i].x][(int)info.pos[i].z].transform.position;
+            GameObject movingRobot = Instantiate(robot, auxPos, Quaternion.identity);
             robotInstances[i] = movingRobot;
         }
 
