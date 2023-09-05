@@ -21,10 +21,10 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 width = 0
 height = 0
 office = []
-
+stage = 0 # 0:Start | 1:Exploración y Recolección
 flag = True
 
-with open('Tests/input7.txt', 'r') as input: # Abriendo el mapa
+with open('Tests/input6.txt', 'r') as input: # Abriendo el mapa
     
     for linea in input:
         if flag:
@@ -53,25 +53,37 @@ class Server(BaseHTTPRequestHandler):
 
     def do_POST(self):
         global model
-        model.step()
-        
+        global stage
+        global office
+
+        modelEnv = None
+
+        if stage != 0: # Unity update
+            model.step()
+            modelEnv = model.environment
+        else: # Unity start -> No steps
+            stage = 1
+            modelEnv = office
 
         mapa = ""
-        for row in range( len(model.environment) ):
+        for row in range( len(modelEnv) ):
 
-            for col in range( len(model.environment[row]) ):
-                mapa += str(model.environment[row][col])
+            for col in range( len(modelEnv[row]) ):
+                mapa += str(modelEnv[row][col]).strip()
 
-                if col != len(model.environment[row]) - 1: 
+                if col < len(modelEnv[row]) - 1: # ??
                     mapa += "*"
             
-            if row != len(model.environment) -1: 
+            if row != len(modelEnv) -1: 
                 mapa += ","
-
+        print(mapa)
 
         info = {
             "width": model.grid.width,
             "height": model.grid.height,
+
+            "cells": model.cells,
+            "garbage": model.garbage,
 
             "robots": len(model.robots_positions),
             "pos": model.robots_positions,
@@ -79,6 +91,8 @@ class Server(BaseHTTPRequestHandler):
             "steps": model.steps,
             "environment" : mapa
         }
+
+        print(len(modelEnv), len(modelEnv[0]))
         
         self._set_response()
         self.wfile.write(str(info).encode('utf-8'))

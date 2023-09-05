@@ -7,8 +7,11 @@ public class Model {
     public int width;
     public int height;
 
+    public int cells;
+    public int garbage;
+
     public int robots;
-    public List<List<int>> pos;
+    public List<List<float>> pos;
 
     public int steps;
     public string environment;
