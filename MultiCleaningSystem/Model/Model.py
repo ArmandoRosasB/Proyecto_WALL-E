@@ -127,8 +127,12 @@ class Office(Model):
                     partition[i] += 1
 
                 for i in range(robots):
-                    agent = Scavenger(id, self,  offset, offset + partition[i] - 1, i)
-                    offset += partition[i]
+                    if i == 0:
+                        agent = Scavenger(id, self,  offset, offset + partition[i], i)
+                        offset += partition[i] + 1
+                    else:
+                        agent = Scavenger(id, self,  offset, offset + partition[i] - 1, i)
+                        offset += partition[i]
 
                     self.grid.place_agent(agent, (x, y))
                     self.schedule.add(agent)
