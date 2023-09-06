@@ -352,6 +352,7 @@
 "Assets/Packages/ScifiOfficeLite/Scripts/DemoFirstPersonController.cs"
 "Assets/Scripts/Data/Model/APIHelper.cs"
 "Assets/Scripts/Data/Model/Model.cs"
+"Assets/Scripts/Framework/Controllers/CameraController.cs"
 -langversion:9.0
 
 /deterministic

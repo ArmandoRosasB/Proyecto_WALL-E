@@ -21,7 +21,7 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 width = 0
 height = 0
 office = []
-
+stage = 0 # 0:Start | 1:Exploración y Recolección
 flag = True
 
 with open('Tests/input3.txt', 'r') as input: # Abriendo el mapa
@@ -32,11 +32,11 @@ with open('Tests/input3.txt', 'r') as input: # Abriendo el mapa
             flag = False
         
         else:
-            office.append(linea.split(" "))
+            office.append(linea.strip().split(" "))
 
 model = Office(width, height, office) # Inicializamos el modelo
 
-"""
+
 class Server(BaseHTTPRequestHandler):
     
     def _set_response(self):
@@ -53,28 +53,47 @@ class Server(BaseHTTPRequestHandler):
 
     def do_POST(self):
         global model
-        model.step()
-        
+        global stage
+        global office
+
+        modelEnv = None
+
+        if stage != 0: # Unity update
+            model.step()
+            modelEnv = model.environment
+        else: # Unity start -> No steps
+            stage = 1
+            modelEnv = office
 
         mapa = ""
-        for row in range( len(model.environment) ):
+        for row in range( len(modelEnv) ):
+            for col in range( len(modelEnv[row]) ):
+                if col < len(modelEnv[row]) - 1:
+                    mapa += str(modelEnv[row][col]).strip() + "*"
+                else:
+                    mapa += str(modelEnv[row][col]).strip()
 
-            for col in range( len(model.environment[row]) ):
-                mapa += str(model.environment[row][col])
-
-                if col != len(model.environment[row]) - 1: 
-                    mapa += "*"
-            
-            if row != len(model.environment) -1: 
+            if row < len(modelEnv) - 1:
                 mapa += ","
 
+
+        pos = ""
+        for elem in range( len(model.robots_positions) ):
+            pos += str(model.robots_positions[elem][0]) + "*" + str(model.robots_positions[elem][1])
+
+            if elem < len(model.robots_positions) - 1:
+                pos += ","
+        
 
         info = {
             "width": model.grid.width,
             "height": model.grid.height,
 
+            "cells": model.cells,
+            "garbage": model.garbage,
+
             "robots": len(model.robots_positions),
-            "pos": model.robots_positions,
+            "positions": pos, #model.robots_positions,
             
             "steps": model.steps,
             "environment" : mapa
@@ -127,4 +146,4 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate, frames = model.steps)
 
 plt.show()
-
+"""

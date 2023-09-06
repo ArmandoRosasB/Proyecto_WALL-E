@@ -4,7 +4,6 @@ using System.Linq;
 using System;
 
 using UnityEngine.Networking;
-//using static System.Random;
 using UnityEditor;
 using UnityEngine; //Para la clase JsonUtility
 
@@ -13,21 +12,25 @@ using System.IO;
 
 public class APIHelper : MonoBehaviour {
     
-    private Model info;
+    public static Model info;
+    private bool explorar;
     private float secondsPerRequest;
     private Vector3 fakePos = new Vector3(-1.0f, -1.0f, -1.0f);
 
     private float x;
     private float z;
+    private System.Random rndInt = new System.Random();
+    private System.Random rndFlt = new System.Random();
 
     public GameObject robot;
+    public GameObject papelera;
     public List<GameObject> floor = new List<GameObject>(); // Hidden | Discovered
     public List<GameObject> trash = new List<GameObject>(); 
-    public List<GameObject> obstacles = new List<GameObject>(); 
+    public List<GameObject> obstacle = new List<GameObject>(); 
 
-    List<GameObject> robotInstances = new List<GameObject>(); 
-    List<List<GameObject>> tileInstances = new List<List<GameObject>>(); 
-    List<List<GameObject>> trashInstances = new List<List<GameObject>>();
+    public static List<GameObject> robotInstances = new List<GameObject>(); 
+    private List<List<GameObject>> tileInstances = new List<List<GameObject>>(); 
+    private List<List<List<GameObject>>> trashInstances = new List<List<List<GameObject>>>();
     
     //  IEnumerator:  Fetch the current element from a collection
     // yield return:  Returns a value, but doesn't “close the book” on the function
@@ -38,8 +41,8 @@ public class APIHelper : MonoBehaviour {
         using (UnityWebRequest request = UnityWebRequest.Post(url, form)) {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(data);
 
-            request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            request.uploadHandler = (UploadHandler) new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = (DownloadHandler) new DownloadHandlerBuffer();
 
             request.SetRequestHeader("Content-Type", "application/json"); // "text/html"
 
@@ -52,35 +55,32 @@ public class APIHelper : MonoBehaviour {
                 string json = request.downloadHandler.text.Replace('\'', '\"'); // Answer from Python
                 info = JsonUtility.FromJson<Model>(json);
 
-                String[] separator = {","};
-                int count = info.width;
-                String[] rows = info.environment.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
-
+                // Reconstruimos el mapa
                 info.mapa = new List<List<string>>();
-
-                separator[0] = "*";
-                foreach(string row in rows) {
-                    info.mapa.Add( row.Split(separator, count, StringSplitOptions.RemoveEmptyEntries).ToList() );
-                }
-
-                /*string map = "";
-                for(int i = 0; i < rows.Length; i++) {
-                    foreach(string col in info.mapa[i]) {
-                        map += col + "-";
-                    }
-                    map += "/";
-                }
-                Debug.Log(map);*/
+                String[] rows = info.environment.Split(",", info.width, StringSplitOptions.RemoveEmptyEntries);
                 
-                //yield return JsonUtility.FromJson<Model>(json);
+                for(int i = 0; i < info.width; i++) {
+                    info.mapa.Add(rows[i].Split("*", info.height, StringSplitOptions.RemoveEmptyEntries).ToList());
+                }
+
+                // Reconstruimos las posiciones
+                info.pos = new List<Vector3>();
+
+                rows = info.positions.Split(",", info.robots, StringSplitOptions.RemoveEmptyEntries);
+
+                for(int i = 0; i < info.robots; i++){
+                    String [] aux = rows[i].Split("*", 2, StringSplitOptions.RemoveEmptyEntries);
+                    info.pos.Add(new Vector3((float)Convert.ToDouble(aux[0]), 1f, (float)Convert.ToDouble(aux[1])));
+                }
             }
-            
+
             doLast();
         }
     }
 
     void Start() {
-        secondsPerRequest = 0.5f;
+        secondsPerRequest = 1f; //0.5f;
+        explorar = true;
         
         string json = EditorJsonUtility.ToJson(fakePos);
         StartCoroutine( SendData(json,DoLastStart) );
@@ -89,22 +89,54 @@ public class APIHelper : MonoBehaviour {
     void DoLastStart() {
         x = 0;
         z = 0;
-        
+
+        CameraController.flag = true;
+
         for(int i = 0; i < info.width; i++){
             tileInstances.Add(new List<GameObject>());
+            trashInstances.Add(new List<List<GameObject>>());
 
             for(int j = 0; j < info.height; j++){
                 GameObject tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
+                
                 tileInstances[i].Add(tile);
+                trashInstances[i].Add(new List<GameObject>());
+
+                if(info.mapa[i][j].Trim() == "X") {
+                    Instantiate(obstacle[ rndInt.Next(0, obstacle.Count - 1) ], new Vector3(x, 1f, z), Quaternion.identity);
+
+                } else if(info.mapa[i][j].Trim() == "P") {
+                    Instantiate(papelera, new Vector3(x, 1f, z), Quaternion.identity);
+
+                } else if(info.mapa[i][j].Trim() == "S") {
+                    info.pos = new List<Vector3>();
+
+                    for(int r = 0; r < info.robots; r++) {
+                        info.pos.Add(new Vector3(x, 1f, z));
+                        GameObject newRobot = Instantiate(robot, info.pos[r], Quaternion.identity);
+                        robotInstances.Add(newRobot);
+                    }
+                
+                } else { // Basura
+                    int basura;
+                    bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+
+                    if (isNumeric) {
+                        for(int k = 0; k < basura; k++){
+                            float rango = 0.75f;
+                            GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), 1f, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
+                            trashInstances[i][j].Add(newTrash);
+                        }
+                    }
+                }
 
                 x += 2;
             }
             z -= 2;
+            CameraController.x = x;
             x = 0;
         }
-
-        // Add robot
-        //GameObject robot = Instantiate(----, new Vector3(x, 0f, z), Quaternion.identity);
+        CameraController.z = z;
     }
 
     void Update() {
@@ -112,7 +144,7 @@ public class APIHelper : MonoBehaviour {
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine( SendData(json,DoLastUpdate) );
 
-            secondsPerRequest = 0.5f;
+            secondsPerRequest = 1f; //0.5f;
         } else {
             secondsPerRequest -= Time.deltaTime;
         }
@@ -122,34 +154,59 @@ public class APIHelper : MonoBehaviour {
         x = 0;
         z = 0;
 
-        for(int i = 0; i < info.width; i++){
-            for(int j = 0; j < info.height; j++){
-                GameObject tile = tileInstances[i][j];
-                Destroy(tile);
+        for(int i = 0; i < info.robots; i++) {
+            GameObject bobot = robotInstances[i];
+            Destroy(bobot);
 
-                if (info.mapa[i][j] == "-1"){
-                    tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
-                } else {
-                    tile = Instantiate(floor[1], new Vector3(x, 0f, z), Quaternion.identity);
+            Vector3 auxPos = tileInstances[(int)info.pos[i].x][(int)info.pos[i].z].transform.position;
+            GameObject movingRobot = Instantiate(robot, auxPos, Quaternion.identity);
+            robotInstances[i] = movingRobot;
+        }
+
+        //if(explorar == true) {
+            for(int i = 0; i < info.width; i++){
+                for(int j = 0; j < info.height; j++){
+                    GameObject tile = tileInstances[i][j];
+                    Destroy(tile);
+
+                    if (info.mapa[i][j] == "-1"){
+                        tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
+                    } else {
+                        tile = Instantiate(floor[1], new Vector3(x, 0f, z), Quaternion.identity);
+                    }
+                    tileInstances[i][j] = tile;
+                    
+                    x += 2;
                 }
-                tileInstances[i][j] = tile;
+                z -= 2;
+                x = 0;
+            }
 
-                // Cambiar para instanciar en el lugar correcto y monitorearlos
-                int basura;
-                bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+            if(info.cells == 0) {
+                explorar = false;
+                Debug.Log("Exploración terminada");
+                Debug.Log(info.steps);
+            }
 
-                if (isNumeric) {
-                    for(int k = 0; k < basura; k++){
-                        System.Random rnd = new System.Random();
-                        System.Random rnd2 = new System.Random();
-                        Instantiate(trash[ rnd.Next(0, trash.Count - 1) ], new Vector3((float)rnd2.NextDouble() * ((x + 1f) - (x - 1f)) + (x - 1f), 1f, (float)rnd2.NextDouble() * ((z + 1f) - (z - 1f)) + (z - 1f)), Quaternion.identity);
+        //} else {
+            for(int i = 0; i < info.width; i++){
+                for(int j = 0; j < info.height; j++){
+                    int basura;
+                    bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+
+                    if (isNumeric) {
+                        if(trashInstances[i][j].Count > basura) {
+                            int delete = trashInstances[i][j].Count - basura;
+
+                            for(int d = trashInstances[i][j].Count - 1; d >= 0; d--) {
+                                GameObject del = trashInstances[i][j][d];
+                                trashInstances[i][j].RemoveAt(d);
+                                Destroy(del);
+                            }
+                        }
                     }
                 }
-                
-                x += 2;
             }
-            z -= 2;
-            x = 0;
-        }
+        //}
     }
 }
