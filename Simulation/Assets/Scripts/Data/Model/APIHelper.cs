@@ -13,14 +13,19 @@ using System.IO;
 public class APIHelper : MonoBehaviour {
     
     public static Model info;
-    private bool explorar;
+
+    private float timer;
     private float secondsPerRequest;
     private Vector3 fakePos = new Vector3(-1.0f, -1.0f, -1.0f);
 
     private float x;
+    public float y;
     private float z;
     private System.Random rndInt = new System.Random();
     private System.Random rndFlt = new System.Random();
+
+    public Light dirLight;
+    private bool change;
 
     public GameObject robot;
     public GameObject papelera;
@@ -79,8 +84,10 @@ public class APIHelper : MonoBehaviour {
     }
 
     void Start() {
-        secondsPerRequest = 1f; //0.5f;
-        explorar = true;
+        dirLight.enabled = false;
+
+        secondsPerRequest = 0.25f;
+        timer = secondsPerRequest;
         
         string json = EditorJsonUtility.ToJson(fakePos);
         StartCoroutine( SendData(json,DoLastStart) );
@@ -103,7 +110,7 @@ public class APIHelper : MonoBehaviour {
                 trashInstances[i].Add(new List<GameObject>());
 
                 if(info.mapa[i][j].Trim() == "X") {
-                    Instantiate(obstacle[ rndInt.Next(0, obstacle.Count - 1) ], new Vector3(x, 1f, z), Quaternion.identity);
+                    Instantiate(obstacle[ rndInt.Next(0, obstacle.Count - 1) ], new Vector3(x, 1.5f, z), Quaternion.identity);
 
                 } else if(info.mapa[i][j].Trim() == "P") {
                     Instantiate(papelera, new Vector3(x, 1f, z), Quaternion.identity);
@@ -124,7 +131,7 @@ public class APIHelper : MonoBehaviour {
                     if (isNumeric) {
                         for(int k = 0; k < basura; k++){
                             float rango = 0.75f;
-                            GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), 1f, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
+                            GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), y, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
                             trashInstances[i][j].Add(newTrash);
                         }
                     }
@@ -140,13 +147,13 @@ public class APIHelper : MonoBehaviour {
     }
 
     void Update() {
-        if(secondsPerRequest <= 0) {
+        if(timer <= 0) {
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine( SendData(json,DoLastUpdate) );
 
-            secondsPerRequest = 1f; //0.5f;
+            timer = secondsPerRequest; //0.5f;
         } else {
-            secondsPerRequest -= Time.deltaTime;
+            timer -= Time.deltaTime;
         }
     }
 
@@ -163,50 +170,45 @@ public class APIHelper : MonoBehaviour {
             robotInstances[i] = movingRobot;
         }
 
-        //if(explorar == true) {
-            for(int i = 0; i < info.width; i++){
-                for(int j = 0; j < info.height; j++){
-                    GameObject tile = tileInstances[i][j];
-                    Destroy(tile);
+        for(int i = 0; i < info.width; i++){
+            for(int j = 0; j < info.height; j++){
+                GameObject tile = tileInstances[i][j];
+                Destroy(tile);
 
-                    if (info.mapa[i][j] == "-1"){
-                        tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
-                    } else {
-                        tile = Instantiate(floor[1], new Vector3(x, 0f, z), Quaternion.identity);
-                    }
-                    tileInstances[i][j] = tile;
-                    
-                    x += 2;
+                if (info.mapa[i][j] == "-1"){
+                    tile = Instantiate(floor[0], new Vector3(x, 0f, z), Quaternion.identity);
+                } else {
+                    tile = Instantiate(floor[1], new Vector3(x, 0f, z), Quaternion.identity);
                 }
-                z -= 2;
-                x = 0;
+                tileInstances[i][j] = tile;
+                
+                x += 2;
             }
+            z -= 2;
+            x = 0;
+        }
 
-            if(info.cells == 0) {
-                explorar = false;
-                Debug.Log("Exploración terminada");
-                Debug.Log(info.steps);
-            }
+        for(int i = 0; i < info.width; i++){
+            for(int j = 0; j < info.height; j++){
+                int basura;
+                bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
 
-        //} else {
-            for(int i = 0; i < info.width; i++){
-                for(int j = 0; j < info.height; j++){
-                    int basura;
-                    bool isNumeric = int.TryParse(info.mapa[i][j], out basura);
+                if (isNumeric && basura != -1) {
+                    if(trashInstances[i][j].Count > basura) {
+                        int delete = trashInstances[i][j].Count - basura;
 
-                    if (isNumeric) {
-                        if(trashInstances[i][j].Count > basura) {
-                            int delete = trashInstances[i][j].Count - basura;
-
-                            for(int d = trashInstances[i][j].Count - 1; d >= 0; d--) {
-                                GameObject del = trashInstances[i][j][d];
-                                trashInstances[i][j].RemoveAt(d);
-                                Destroy(del);
-                            }
+                        for(int d = trashInstances[i][j].Count - 1; d >= 0; d--) {
+                            GameObject del = trashInstances[i][j][d];
+                            trashInstances[i][j].RemoveAt(d);
+                            Destroy(del);
                         }
                     }
                 }
             }
-        //}
+        }
+
+        if(info.cells == 0) {
+            dirLight.enabled = true;
+        }
     }
 }

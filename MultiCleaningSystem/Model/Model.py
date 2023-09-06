@@ -6,13 +6,13 @@ from mesa import Model # Paquetes para trabajar con modelos
 from mesa.space import MultiGrid # Paquete para poder alojar a varios agentes en un mismo cuadrante
 from mesa.time import BaseScheduler # Paquete para activar todos los robots al mismo tiempo
 
-
+"""
 def get_grid(model: Model) -> list:
-    """
+    "" "
     La función get_grid recibe como parámetro el modelo 
     y regresa el mapa del modelo con determinados valores
     en forma de matriz
-    """
+    "" "
     grid = np.zeros( (model.grid.width, model.grid.height) )
 
     for (content, (x, y)) in model.grid.coord_iter():
@@ -28,7 +28,41 @@ def get_grid(model: Model) -> list:
         grid[x][y] = 1 # Robot
 
     return grid
+"""
 
+colores = []
+
+def get_grid(model):
+    """
+    La función get_grid recibe como parámetro el modelo 
+    y regresa el mapa del modelo con determinados valores
+    en forma de matriz
+    """
+    grid = np.zeros( (model.grid.width, model.grid.height) )
+
+    for (content, (x, y)) in model.grid.coord_iter():
+
+        """
+        for c in colores:
+            grid[c[0]][c[1]] = 4 # Robot
+        """
+
+        if len(content) == 1:  
+            if content[0].value == 'X':
+                grid[x][y] = 11 # Obstáculo
+
+            elif content[0].value == 'P' and [x, y] not in colores:
+                grid[x][y] = 0 # Papelera
+
+            elif [x, y] not in colores:
+                grid[x][y] = 2 # Solo basura
+            
+            continue
+        
+        colores.append([x, y])
+        grid[x][y] = 4 # Robot
+
+    return grid
 
 class Office(Model):
     """ Clase heredada de mesa.model que representa la oficina """
@@ -93,8 +127,12 @@ class Office(Model):
                     partition[i] += 1
 
                 for i in range(robots):
-                    agent = Scavenger(id, self,  offset, offset + partition[i] - 1, i)
-                    offset += partition[i]
+                    if i == 0:
+                        agent = Scavenger(id, self,  offset, offset + partition[i], i)
+                        offset += partition[i] + 1
+                    else:
+                        agent = Scavenger(id, self,  offset, offset + partition[i] - 1, i)
+                        offset += partition[i]
 
                     self.grid.place_agent(agent, (x, y))
                     self.schedule.add(agent)

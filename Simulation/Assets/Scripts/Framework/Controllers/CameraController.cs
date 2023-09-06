@@ -13,6 +13,15 @@ public class CameraController : MonoBehaviour {
     private Model reference;
     private List<GameObject> robots;
 
+    [SerializeField]
+    private float horizontal;
+
+    [SerializeField]
+    private float vertical;
+
+
+    private float speed = 5f;
+
     // Start is called before the first frame update
     void Start() {
         flag = false;
@@ -29,17 +38,17 @@ public class CameraController : MonoBehaviour {
             if (!modifyOffset){
                 x = x / 2;
                 z = (z / 2) + 1;
+                transform.position = new Vector3(x, 27.2f, z);
                 modifyOffset = true;
             }
-            transform.position = new Vector3(x, 27.2f, z);
-
-
-
-
-
-
-
+           
         }
+
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
+
+        transform.Translate(Vector3.forward * Time.deltaTime * speed * vertical);
+        transform.Translate(Vector3.right * Time.deltaTime * speed * horizontal);
        
     }
 }
