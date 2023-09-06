@@ -13,14 +13,19 @@ using System.IO;
 public class APIHelper : MonoBehaviour {
     
     public static Model info;
-    private bool explorar;
+
+    private float timer;
     private float secondsPerRequest;
     private Vector3 fakePos = new Vector3(-1.0f, -1.0f, -1.0f);
 
     private float x;
+    public float y;
     private float z;
     private System.Random rndInt = new System.Random();
     private System.Random rndFlt = new System.Random();
+
+    public Light dirLight;
+    private bool change;
 
     public GameObject robot;
     public GameObject papelera;
@@ -79,8 +84,10 @@ public class APIHelper : MonoBehaviour {
     }
 
     void Start() {
-        secondsPerRequest = 0.25f; //0.5f;
-        explorar = true;
+        dirLight.enabled = false;
+
+        secondsPerRequest = 0.25f;
+        timer = secondsPerRequest;
         
         string json = EditorJsonUtility.ToJson(fakePos);
         StartCoroutine( SendData(json,DoLastStart) );
@@ -124,7 +131,7 @@ public class APIHelper : MonoBehaviour {
                     if (isNumeric) {
                         for(int k = 0; k < basura; k++){
                             float rango = 0.75f;
-                            GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), 1.5f, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
+                            GameObject newTrash = Instantiate(trash[ rndInt.Next(0, trash.Count - 1) ], new Vector3((float)rndFlt.NextDouble() * ((x + rango) - (x - rango)) + (x - rango), y, (float)rndFlt.NextDouble() * ((z + rango) - (z - rango)) + (z - rango)), Quaternion.identity);
                             trashInstances[i][j].Add(newTrash);
                         }
                     }
@@ -140,13 +147,13 @@ public class APIHelper : MonoBehaviour {
     }
 
     void Update() {
-        if(secondsPerRequest <= 0) {
+        if(timer <= 0) {
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine( SendData(json,DoLastUpdate) );
 
-            secondsPerRequest = 0.25f; //0.5f;
+            timer = secondsPerRequest; //0.5f;
         } else {
-            secondsPerRequest -= Time.deltaTime;
+            timer -= Time.deltaTime;
         }
     }
 
@@ -198,6 +205,10 @@ public class APIHelper : MonoBehaviour {
                     }
                 }
             }
+        }
+
+        if(info.cells == 0) {
+            dirLight.enabled = true;
         }
     }
 }
