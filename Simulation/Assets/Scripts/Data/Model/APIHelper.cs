@@ -40,7 +40,7 @@ public class APIHelper : MonoBehaviour {
     //  IEnumerator:  Fetch the current element from a collection
     // yield return:  Returns a value, but doesn't “close the book” on the function
     IEnumerator SendData(string data, Action doLast) {
-        string url = "http://localhost:8585";
+        string url = "http://10.25.93.243:8585";
         WWWForm form = new WWWForm();
 
         using (UnityWebRequest request = UnityWebRequest.Post(url, form)) {
